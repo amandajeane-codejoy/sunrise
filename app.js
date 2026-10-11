@@ -1,4 +1,4 @@
-const VERSION = '0.2';
+const VERSION = '0.3';
 const SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const TAB_FOR = { checkin: 'today', today: 'today', progress: 'progress', settings: 'settings' };
 

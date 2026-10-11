@@ -1,5 +1,5 @@
 // Change VERSION whenever any app file changes, so phones pick up the update.
-const VERSION = 'sunrise-0.2';
+const VERSION = 'sunrise-0.3';
 const FILES = [
   './',
   'index.html',
@@ -13,9 +13,15 @@ const FILES = [
   'img/icon-512.png',
   'img/sunrise-header.jpg'
 ];
+// How long to wait for the network before using the saved copy.
+const NETWORK_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(VERSION).then(cache => cache.addAll(FILES)));
+  // cache: 'reload' skips the browser's own cache, so we never save a stale file.
+  event.waitUntil(
+    caches.open(VERSION).then(cache =>
+      cache.addAll(FILES.map(f => new Request(f, { cache: 'reload' }))))
+  );
   self.skipWaiting();
 });
 
@@ -27,10 +33,24 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Network first, so updates show up right away. Fall back to the saved copy
+// when offline or when the network is too slow.
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request, { ignoreSearch: true })
-      .then(hit => hit || fetch(event.request))
-  );
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
+
+  event.respondWith((async () => {
+    const cache = await caches.open(VERSION);
+    const fromNetwork = fetch(request, { cache: 'no-cache' }).then(response => {
+      if (response.ok) cache.put(request, response.clone());
+      return response;
+    });
+    const timeout = new Promise(resolve => setTimeout(resolve, NETWORK_TIMEOUT_MS));
+    try {
+      const response = await Promise.race([fromNetwork, timeout]);
+      if (response) return response;
+    } catch (e) { /* offline */ }
+    const saved = await cache.match(request, { ignoreSearch: true });
+    return saved || fromNetwork;
+  })());
 });
