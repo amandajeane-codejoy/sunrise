@@ -51,11 +51,14 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .fill.orchid{background:var(--orchid)}
 
 /* Check-in */
-#checkin{position:relative;overflow:hidden;padding-top:calc(var(--top) + 16px)}
-#checkin .sky{position:absolute;left:0;right:0;top:0;height:calc(var(--top) + 400px);background:url(img/sunrise-header.jpg) center bottom/cover}
-#checkin .sky:after{content:'';position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(transparent,var(--bg))}
-#checkin > *:not(.sky){position:relative}
-#checkin .top{margin-bottom:18px}
+/* Screens with the sunrise header */
+.hero{position:relative;overflow:hidden;padding-top:calc(var(--top) + 16px)}
+.hero .sky{position:absolute;left:0;right:0;top:0;height:calc(var(--top) + 400px);background:url(img/sunrise-header.jpg) center bottom/cover}
+
+.hero .sky:after{content:'';position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(transparent,var(--bg))}
+
+.hero > *:not(.sky){position:relative}
+.hero .top{margin-bottom:18px}
 .next-card{margin-top:150px;padding:16px}
 .next-icon{width:46px;height:46px;flex:none;border-radius:14px;background:var(--orchid);color:var(--bg);display:grid;place-items:center}
 .plan{margin-top:24px}
@@ -101,13 +104,20 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .notice{border:1px dashed var(--border);border-radius:16px;padding:12px 14px;font-size:13px;color:var(--muted)}
 .setting{min-height:54px;padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
 .setting:last-child{border:0;padding-bottom:0}
-.setting label,.setting .label{font-size:15px;font-weight:700}
-.setting input:not([type=checkbox]),.setting select{width:130px;min-height:40px;background:#1f1634;border:1px solid var(--border);border-radius:10px;padding:6px 10px;text-align:right}
+.setting > span:first-child,.setting .label{font-size:15px;font-weight:700}
+.setting input:not([type=checkbox]),.setting select{width:150px;font-size:16px;min-height:40px;background:#1f1634;border:1px solid var(--border);border-radius:10px;padding:6px 10px;text-align:right}
+.setting input.short{width:70px}
 .setting input[type=checkbox]{width:24px;height:24px;accent-color:var(--orchid)}
 .stack{display:block}
 .stack textarea{display:block;width:100%;margin-top:8px;min-height:64px;background:#1f1634;border:1px solid var(--border);border-radius:12px;padding:10px;resize:vertical}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.chip{border:1px solid var(--border);background:#1f1634;border-radius:100px;padding:7px 13px;font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);background:#1f1634;border-radius:100px;padding:5px 6px 5px 13px;font-size:14px}
+.chip button{border:0;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:50%;font-size:18px;line-height:1}
+.chips .empty{font-size:13px;color:var(--muted)}
+.add-row{display:flex;gap:8px;margin-top:10px}
+.add-row input,.add-row select{min-width:0;flex:1;min-height:44px;background:#1f1634;border:1px solid var(--border);border-radius:12px;padding:6px 10px;font-size:16px}
+.add-row input[type=number]{flex:0 0 84px}
+.add-row button{flex:none;min-height:44px;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:0 14px;font-weight:800}
 .quote{margin-top:10px;padding:12px 14px;border-left:3px solid var(--orchid);background:#231839;border-radius:0 12px 12px 0;font-size:14px;color:var(--cream)}
 .two-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
@@ -120,3 +130,11 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 /* Toast */
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + var(--bottom) + 14px);transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--cream);color:var(--bg);font-weight:700;font-size:14px;border-radius:14px;padding:10px 16px;max-width:340px;width:max-content;transition:.2s;z-index:10}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Setup */
+.setup{padding-bottom:calc(var(--bottom) + 32px)}
+.hero-text{margin-top:205px;font-size:17px}
+.big-sun{font-size:72px;color:var(--gold);text-align:center;margin:20px 0 8px;text-shadow:0 0 30px #ffc24b80}
+.center{text-align:center}
+.field-error{min-height:20px;margin-top:10px;color:#ff9a9d;font-size:14px}
+.empty-note{font-size:14px;color:var(--muted);padding-top:10px}

@@ -31,61 +31,127 @@
 
 <main class="app-shell">
 
-  <!-- CHECK-IN -->
-  <section id="checkin" class="screen" aria-label="Check-in">
+  <!-- ============ FIRST-TIME SETUP ============ -->
+
+  <section id="welcome" class="screen setup hero" aria-label="Welcome">
+    <div class="sky" aria-hidden="true"></div>
+    <header class="top"><span class="brand">sunrise ☀</span></header>
+    <p class="eyebrow">Welcome</p>
+    <h1 class="gap-s">Your 70-workout<br>journey starts here.</h1>
+    <div class="hero-text">
+      <p>15 minutes a day, low impact, shoulder-safe. No streaks, and nothing ever resets to zero.</p>
+      <p class="muted gap-s">Setup takes about 2 minutes.</p>
+    </div>
+    <button type="button" class="primary gap" data-go="setup-you">Let’s start →</button>
+    <button type="button" class="secondary gap-s" data-restore>Restore from a backup</button>
+  </section>
+
+  <section id="setup-you" class="screen setup" aria-label="About you">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Back" data-go="welcome">‹</button>
+      <span class="pill">STEP 1 OF 3</span>
+    </header>
+    <h1>About you</h1>
+    <article class="card gap">
+      <label class="setting"><span>Your name</span><input data-field="profile.name" autocomplete="given-name" placeholder="Name"></label>
+      <label class="setting stack"><span>My why</span><textarea data-field="profile.why" rows="3"></textarea></label>
+      <label class="setting"><span>Workouts per week</span><input data-field="profile.weeklyTarget" type="number" inputmode="numeric" min="1" max="7" class="short"></label>
+    </article>
+    <p class="tiny gap-s">Your weekly target is a goal, not a rule. A week counts as a success when you meet it.</p>
+    <p class="field-error" id="you-error" role="alert"></p>
+    <button type="button" class="primary gap" data-next="you">Next →</button>
+  </section>
+
+  <section id="setup-gear" class="screen setup" aria-label="Your equipment">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Back" data-go="setup-you">‹</button>
+      <span class="pill">STEP 2 OF 3</span>
+    </header>
+    <h1>Your equipment</h1>
+    <p class="muted gap-s">Add the weights you own. Sunrise only ever suggests weights from this list.</p>
+    <article class="card gap" data-gear-editor></article>
+    <p class="tiny gap-s">No need to be perfect. You can change this any time in Settings.</p>
+    <button type="button" class="primary gap" data-go="setup-davis">Next →</button>
+  </section>
+
+  <section id="setup-davis" class="screen setup" aria-label="Accountability partner">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Back" data-go="setup-gear">‹</button>
+      <span class="pill">STEP 3 OF 3</span>
+    </header>
+    <h1>Your accountability partner</h1>
+    <p class="muted gap-s">Sunrise writes short updates for him. You send each one with a single tap.</p>
+    <article class="card gap" data-davis-editor></article>
+    <button type="button" class="primary gap" data-go="setup-ready">Next →</button>
+  </section>
+
+  <section id="setup-ready" class="screen setup" aria-label="Ready">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Back" data-go="setup-davis">‹</button>
+      <span class="brand">sunrise ☀</span>
+    </header>
+    <div class="big-sun" aria-hidden="true">☀</div>
+    <h1 class="center">You’re all set, <span data-name></span>.</h1>
+    <p class="muted center gap-s">Your journey starts at Workout 1 of 70. First up is Shoulders &amp; Posture.</p>
+    <article class="card gap">
+      <p class="eyebrow">Your why</p>
+      <p class="gap-s" data-why></p>
+    </article>
+    <button type="button" class="gold-button gap" data-finish-setup>Start my journey →</button>
+  </section>
+
+  <!-- ============ MAIN APP ============ -->
+
+  <section id="checkin" class="screen hero" aria-label="Check-in">
     <div class="sky" aria-hidden="true"></div>
     <header class="top">
       <span class="brand">sunrise ☀</span>
       <span class="pill" data-date="long"></span>
     </header>
-    <p class="eyebrow" data-kicker>Your morning starts here</p>
-    <h1 class="gap-s"><span data-greeting>Good morning</span>,<br>Amanda Jeane</h1>
+    <p class="eyebrow" data-kicker></p>
+    <h1 class="gap-s"><span data-greeting></span>,<br><span data-name></span></h1>
 
     <article class="card next-card">
       <div class="row" style="align-items:flex-start;justify-content:flex-start;gap:14px">
         <div class="next-icon"><svg class="i"><use href="#i-dumbbell"/></svg></div>
         <div style="min-width:0;flex:1">
           <p class="eyebrow">Next up</p>
-          <h2 style="margin-top:6px">Shoulders &amp; Posture</h2>
-          <p class="muted" style="margin-top:4px">15 min · mat + light dumbbells</p>
+          <h2 style="margin-top:6px" data-next-type></h2>
+          <p class="muted" style="margin-top:4px">15 min · <span data-gear-summary></span></p>
         </div>
       </div>
       <div class="line"></div>
-      <div class="bar-label"><span>Journey</span><strong style="color:var(--gold)">Workout 23 of 70</strong></div>
-      <div class="track"><div class="fill" style="width:31%"></div></div>
+      <div class="bar-label"><span>Journey</span><strong style="color:var(--gold)">Workout <span data-next-number></span> of 70</strong></div>
+      <div class="track"><div class="fill" data-journey-fill></div></div>
     </article>
 
     <section class="plan" aria-label="Today's plan">
       <h2>What’s the plan today?</h2>
       <button type="button" class="primary" data-go="today">Workout now →</button>
       <div class="plan-grid">
-        <button type="button" class="choice" data-plan="Workout later. Pick a time in step 6."><svg class="i"><use href="#i-clock"/></svg>Later</button>
-        <button type="button" class="choice" data-plan="Walk day. Remember to log it later."><svg class="i"><use href="#i-walk"/></svg>Walk</button>
-        <button type="button" class="choice" data-plan="Short day. 5 minutes still counts."><svg class="i"><use href="#i-zap"/></svg>5 min</button>
-        <button type="button" class="choice rest" data-plan="Rest day logged. See you tomorrow."><svg class="i"><use href="#i-moon"/></svg>Rest</button>
+        <button type="button" class="choice" data-plan="Workout later. Picking a time arrives in step 6."><svg class="i"><use href="#i-clock"/></svg>Later</button>
+        <button type="button" class="choice" data-plan="Walk day. Logging walks arrives in step 6."><svg class="i"><use href="#i-walk"/></svg>Walk</button>
+        <button type="button" class="choice" data-plan="Short day. The 5-minute version arrives in step 6."><svg class="i"><use href="#i-zap"/></svg>5 min</button>
+        <button type="button" class="choice rest" data-plan="Rest day. Logging rest days arrives in step 6."><svg class="i"><use href="#i-moon"/></svg>Rest</button>
       </div>
       <p class="status" role="status" id="plan-status"></p>
     </section>
   </section>
 
-  <!-- TODAY (workout overview) -->
   <section id="today" class="screen" aria-label="Today's workout">
     <header class="top">
       <button type="button" class="icon-button" aria-label="Back to check-in" data-go="checkin">‹</button>
       <span class="pill" data-date="short"></span>
     </header>
-    <p class="eyebrow">Today · Workout 23</p>
-    <h1 class="gap-s">Shoulders &amp; Posture</h1>
+    <p class="eyebrow">Today · Workout <span data-next-number></span></p>
+    <h1 class="gap-s" data-next-type></h1>
     <div class="pills gap">
-      <span class="pill">◷ 15 min</span><span class="pill">↻ 3 rounds</span><span class="pill">Mat + 5 lb</span>
+      <span class="pill">◷ 15 min</span><span class="pill">↻ 3 rounds</span><span class="pill" data-gear-pill></span>
     </div>
 
     <article class="card gap">
       <p class="eyebrow">The moves · 40 sec each</p>
-      <div class="move"><span class="move-num">1</span><div class="move-body"><strong>Wall slides</strong><span class="tiny">Easier version · no weight</span></div><span class="tag">STAND</span></div>
-      <div class="move"><span class="move-num">2</span><div class="move-body"><strong>Dumbbell bent-over row</strong><span class="tiny">5 lb each hand</span></div><span class="tag">STAND</span></div>
-      <div class="move"><span class="move-num">3</span><div class="move-body"><strong>Reverse fly</strong><span class="tiny">5 lb · light cap</span></div><span class="tag">STAND</span></div>
-      <div class="move"><span class="move-num">4</span><div class="move-body"><strong>Prone Y-T-W raises</strong><span class="tiny">Easier version · no weight</span></div><span class="tag floor">FLOOR</span></div>
+      <div id="today-moves"></div>
     </article>
 
     <article class="card gap-s safety">
@@ -97,7 +163,6 @@
     <button type="button" class="primary gap-s" data-soon="The workout timer arrives in step 4.">Start workout →</button>
   </section>
 
-  <!-- PROGRESS -->
   <section id="progress" class="screen" aria-label="Progress">
     <header class="top">
       <span class="brand">sunrise ☀</span>
@@ -106,18 +171,18 @@
     <h1>Progress</h1>
 
     <article class="card gap">
-      <div class="bar-label"><span class="eyebrow">This week</span><strong>2 of 3 workouts</strong></div>
-      <div class="track"><div class="fill orchid" style="width:67%"></div></div>
-      <div class="bar-label" style="margin-top:18px"><span class="eyebrow">Journey</span><strong style="color:var(--gold)">23 of 70</strong></div>
-      <div class="track"><div class="fill" style="width:33%"></div></div>
-      <p class="tiny gap-s">Moved 5 of the last 7 days.</p>
+      <div class="bar-label"><span class="eyebrow">This week</span><strong><span data-week-count></span> of <span data-week-target></span> workouts</strong></div>
+      <div class="track"><div class="fill orchid" data-week-fill></div></div>
+      <div class="bar-label" style="margin-top:18px"><span class="eyebrow">Journey</span><strong style="color:var(--gold)"><span data-done></span> of 70</strong></div>
+      <div class="track"><div class="fill" data-journey-fill></div></div>
+      <p class="tiny gap-s" data-moved></p>
     </article>
 
     <article class="card gap-s">
       <div class="totals">
-        <div><div class="num">2</div><div class="tiny">this week</div></div>
-        <div><div class="num">9</div><div class="tiny">this month</div></div>
-        <div><div class="num">23</div><div class="tiny">overall</div></div>
+        <div><div class="num" data-week-count></div><div class="tiny">this week</div></div>
+        <div><div class="num" data-month-count></div><div class="tiny">this month</div></div>
+        <div><div class="num" data-done></div><div class="tiny">overall</div></div>
       </div>
     </article>
 
@@ -131,71 +196,54 @@
 
     <article class="card gap-s">
       <h2>Getting stronger</h2>
-      <div class="gap-s">
-        <div class="lift"><span>Goblet squat</span><span class="muted">10 → <b>15 lb</b></span></div>
-        <div class="lift"><span>Bicep curl</span><span class="muted">5 → <b>8 lb</b></span></div>
-        <div class="lift"><span>Romanian deadlift</span><span class="muted">10 → <b>12 lb</b></span></div>
-      </div>
+      <p class="tiny gap-s">Your weights for each move will show here after a few workouts.</p>
     </article>
 
     <article class="card gap-s">
       <p class="eyebrow">Recent workouts</p>
-      <div class="move"><span class="move-num">✦</span><div class="move-body"><strong>Core</strong><span class="tiny">Workout 22 · Oct 9</span></div></div>
-      <div class="move"><span class="move-num">✦</span><div class="move-body"><strong>Upper Body</strong><span class="tiny">Workout 21 · Oct 7</span></div></div>
-      <div class="move"><span class="move-num">✦</span><div class="move-body"><strong>Lower Body</strong><span class="tiny">Workout 20 · Oct 5</span></div></div>
+      <div id="recent"></div>
     </article>
 
     <p class="tiny gap">Only workouts move the journey forward. Walk days are yours to celebrate, too.</p>
   </section>
 
-  <!-- SETTINGS -->
   <section id="settings" class="screen" aria-label="Settings">
     <header class="top">
       <span class="brand">sunrise ☀</span>
       <span class="pill">YOUR SPACE</span>
     </header>
     <h1>Settings</h1>
-    <p class="notice gap-s">Sample settings for now. Saving your own comes in step 2.</p>
+    <p class="tiny gap-s">Changes save automatically.</p>
 
     <article class="card gap">
       <h2>You</h2>
-      <div class="setting"><label for="s-name">Name</label><input id="s-name" value="Amanda Jeane"></div>
-      <div class="setting stack"><label for="s-why">My why</label><textarea id="s-why">Feel strong for real life and undo desk posture.</textarea></div>
-      <div class="setting"><label for="s-target">Workouts per week</label><input id="s-target" type="number" min="1" max="7" value="3" style="width:70px"></div>
+      <label class="setting"><span>Name</span><input data-field="profile.name" autocomplete="given-name"></label>
+      <label class="setting stack"><span>My why</span><textarea data-field="profile.why" rows="3"></textarea></label>
+      <label class="setting"><span>Workouts per week</span><input data-field="profile.weeklyTarget" type="number" inputmode="numeric" min="1" max="7" class="short"></label>
     </article>
 
     <article class="card gap-s">
       <h2>Equipment</h2>
-      <div class="setting"><label for="s-mat">Yoga mat</label><input id="s-mat" type="checkbox" checked></div>
-      <div class="setting stack"><span class="label">Dumbbells</span><div class="chips"><span class="chip">5 lb pair</span><span class="chip">8 lb pair</span><span class="chip">12 lb pair</span><span class="chip">15 lb single</span></div></div>
-      <div class="setting stack"><span class="label">Kettlebell</span><div class="chips"><span class="chip">15 lb</span></div></div>
+      <div data-gear-editor></div>
     </article>
 
     <article class="card gap-s">
       <h2>Davis</h2>
-      <div class="setting"><label for="s-davis">Name</label><input id="s-davis" value="Davis"></div>
-      <div class="setting"><label for="s-phone">Phone</label><input id="s-phone" type="tel" placeholder="(555) 555-0100"></div>
-      <div class="setting"><label for="s-sum">Sunday summary</label><input id="s-sum" type="checkbox" checked></div>
-      <div class="setting stack">
-        <div class="row"><label for="s-two">Two-days-off alert</label><input id="s-two" type="checkbox" checked style="width:24px;height:24px;accent-color:var(--orchid)"></div>
-        <p class="tiny gap-s">Messages always say "your wife," never your name. For example:</p>
-        <p class="quote">Your wife got in 4 workouts this week, including 2 shoulder days.</p>
-        <p class="quote">Your wife has had 2 days off in a row. A little encouragement might help her get moving tomorrow morning.</p>
-      </div>
+      <div data-davis-editor></div>
     </article>
 
     <article class="card gap-s">
       <h2>Reminders</h2>
-      <div class="setting"><label for="s-time">Morning check-in</label><input id="s-time" type="time" value="05:55"></div>
-      <p class="tiny gap-s">Reminders are set up with iPhone Shortcuts. We'll do that together in step 9.</p>
+      <label class="setting"><span>Morning check-in</span><input data-field="reminders.checkinTime" type="time"></label>
+      <p class="tiny gap-s">Reminders are set up with iPhone Shortcuts. We’ll do that together in step 9.</p>
     </article>
 
     <article class="card gap-s">
       <h2>Back up your data</h2>
-      <p class="tiny gap-s">Save a copy of everything as a file, so nothing is lost if your phone is reset.</p>
+      <p class="tiny gap-s">Save a copy of everything as a file, so nothing is lost if your phone is reset. Good habit: once a week.</p>
       <div class="two-buttons gap-s">
-        <button type="button" class="secondary" data-soon="Back up arrives in step 2.">Back up</button>
-        <button type="button" class="secondary" data-soon="Restore arrives in step 2.">Restore</button>
+        <button type="button" class="secondary" data-backup>Back up</button>
+        <button type="button" class="secondary" data-restore>Restore</button>
       </div>
     </article>
 
@@ -210,8 +258,10 @@
   <button type="button" data-go="settings" data-tab="settings"><svg class="i"><use href="#i-sliders"/></svg>Settings</button>
 </nav>
 
+<input type="file" id="restore-file" accept="application/json,.json" hidden>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="store.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
