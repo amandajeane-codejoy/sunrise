@@ -1,9 +1,13 @@
 // Change VERSION whenever any app file changes, so phones pick up the update.
-const VERSION = 'sunrise-0.1';
+const VERSION = 'sunrise-0.2';
 const FILES = [
   './',
   'index.html',
+  'styles.css',
+  'app.js',
   'manifest.webmanifest',
+  'fonts/fredoka.woff2',
+  'fonts/nunito.woff2',
   'img/icon-180.png',
   'img/icon-192.png',
   'img/icon-512.png',
