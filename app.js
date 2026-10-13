@@ -1,13 +1,18 @@
-const VERSION = '0.4';
+const VERSION = '0.5';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
+const WORKOUT_SCREENS = ['preview', 'glance', 'okay', 'hurt', 'done'];
 const TAB_FOR = { checkin: 'today', today: 'today', progress: 'progress', settings: 'settings' };
 
 /* ---------- Navigation ---------- */
 
 function openScreen(id) {
   if (!state.setupDone && !SETUP_SCREENS.includes(id)) id = 'welcome';
-  if (state.setupDone && !MAIN_SCREENS.includes(id)) id = 'checkin';
+  if (state.setupDone && !MAIN_SCREENS.includes(id) && !WORKOUT_SCREENS.includes(id)) id = 'checkin';
+  // Workout screens only make sense mid-workout (for example, not after reopening the app).
+  if (id === 'glance' && !session) id = 'today';
+  if (['okay', 'hurt', 'done'].includes(id) && !lastResult) id = 'checkin';
+  if (session && id !== 'glance') stopSession();
 
   render();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
@@ -18,7 +23,8 @@ function openScreen(id) {
     if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   window.scrollTo(0, 0);
-  history.replaceState(null, '', id === 'checkin' ? './' : `?screen=${id}`);
+  const remember = MAIN_SCREENS.includes(id) || SETUP_SCREENS.includes(id);
+  history.replaceState(null, '', id === 'checkin' || !remember ? './' : `?screen=${id}`);
 }
 
 let toastTimer;
@@ -168,18 +174,6 @@ function renderDavisEditors() {
 
 /* ---------- Main screens ---------- */
 
-// Placeholder moves until the exercise library arrives in step 3.
-function sampleMoves() {
-  const lb = lightestDumbbell();
-  const weight = lb ? `${lb} lb` : 'no weight';
-  return [
-    { name: 'Wall slides', meta: 'Easier version · no weight', floor: false },
-    { name: 'Dumbbell bent-over row', meta: lb ? `${lb} lb` : 'bodyweight version', floor: false },
-    { name: 'Reverse fly', meta: lb ? `${weight} · light cap` : 'no weight', floor: false },
-    { name: 'Prone Y-T-W raises', meta: 'Easier version · no weight', floor: true }
-  ];
-}
-
 function renderDates() {
   const now = new Date();
   setText('[data-date="long"]', now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase());
@@ -229,15 +223,14 @@ function render() {
 
   const done = workoutsDone();
   setText('[data-next-number]', nextWorkoutNumber());
-  setText('[data-next-type]', nextDayType());
+  setText('[data-next-type]', todayType());
   setText('[data-gear-summary]', gearSummary());
   setText('[data-done]', done);
   document.querySelectorAll('[data-journey-fill]').forEach(el => el.style.width = `${(done / JOURNEY_LENGTH) * 100}%`);
 
   const lb = lightestDumbbell();
   setText('[data-gear-pill]', [state.equipment.mat ? 'Mat' : '', lb ? `${lb} lb` : ''].filter(Boolean).join(' + ') || 'No gear');
-  document.getElementById('today-moves').innerHTML = sampleMoves().map((m, i) =>
-    `<div class="move"><span class="move-num">${i + 1}</span><div class="move-body"><strong>${m.name}</strong><span class="tiny">${m.meta}</span></div><span class="tag${m.floor ? ' floor' : ''}">${m.floor ? 'FLOOR' : 'STAND'}</span></div>`).join('');
+  renderToday();
 
   const week = weekCount(), target = Number(p.weeklyTarget) || 3;
   setText('[data-week-count]', week);
@@ -249,9 +242,48 @@ function render() {
 
   renderCalendar();
   renderRecent();
+  renderPaused();
+  renderDone();
   renderGearEditors();
   renderDavisEditors();
   fillFields();
+}
+
+function renderToday() {
+  const plan = planWorkout();
+  setText('[data-work-secs]', plan.workSecs);
+  document.getElementById('today-moves').innerHTML = plan.moves.length
+    ? plan.moves.map(({ move, version, weight }, i) =>
+        `<div class="move"><span class="move-num">${i + 1}</span><div class="move-body"><strong>${esc(move.name)}</strong>` +
+        `<span class="tiny">${VERSION_LABEL[version]} · ${weightText(weight)}</span></div>` +
+        `<span class="tag${move.floor ? ' floor' : ''}">${move.floor ? 'FLOOR' : 'STAND'}</span></div>`).join('')
+    : '<p class="empty-note">No moves fit your equipment for this day type. Try a swap, or add weights in Settings.</p>';
+  document.getElementById('today-safety').hidden = !plan.shoulderDay;
+
+  const swap = document.getElementById('swap-type');
+  swap.innerHTML = DAY_TYPES.map(t =>
+    `<option value="${esc(t)}"${t === plan.type ? ' selected' : ''}>${esc(t)}${t === nextDayType() ? ' (next in line)' : ''}</option>`).join('');
+}
+
+document.getElementById('swap-type').addEventListener('change', event => {
+  const today = todayState();
+  today.typeOverride = event.target.value === nextDayType() ? null : event.target.value;
+  saveState();
+  render();
+  toast(`Today is ${todayType()}`);
+});
+
+function renderPaused() {
+  const paused = Object.entries(state.pausedMoves);
+  document.getElementById('paused-card').hidden = !paused.length && !state.shoulderHold;
+  const rows = paused.map(([id, info]) =>
+    `<div class="paused-row"><div><strong>${esc(MOVE_BY_ID[id] ? MOVE_BY_ID[id].name : id)}</strong><p class="tiny">${esc(info.area)} · ${new Date(info.date + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p></div>` +
+    `<button type="button" data-unpause="${id}">Turn back on</button></div>`);
+  if (state.shoulderHold) {
+    rows.push(`<div class="paused-row"><div><strong>Shoulder progress on hold</strong><p class="tiny">Shoulder moves won't get harder.</p></div>` +
+      `<button type="button" data-unhold>Resume</button></div>`);
+  }
+  document.getElementById('paused-list').innerHTML = rows.join('');
 }
 
 /* ---------- Setup flow ---------- */
@@ -326,6 +358,10 @@ document.addEventListener('click', event => {
 
   if (t.closest('[data-backup]')) return backUp();
   if (t.closest('[data-restore]')) return document.getElementById('restore-file').click();
+
+  const unpause = t.closest('[data-unpause]');
+  if (unpause) { delete state.pausedMoves[unpause.dataset.unpause]; saveState(); render(); return toast('Move turned back on'); }
+  if (t.closest('[data-unhold]')) { state.shoulderHold = false; saveState(); render(); return toast('Shoulder moves will progress again'); }
 
   const soon = t.closest('[data-soon]');
   if (soon) return toast(soon.dataset.soon);

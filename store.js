@@ -12,6 +12,13 @@ function defaultState() {
     davis: { name: 'Davis', phone: '', weeklySummary: true, twoDayAlert: true },
     reminders: { checkinTime: '05:55' },
     journey: { number: 1, startedOn: null, queueIndex: 0 },
+    prefs: { voice: false },
+    // Today's choices: { date, typeOverride, versions: { moveId: 'easier' } }
+    today: null,
+    // Moves paused after "I hurt myself": { moveId: { date, area } }
+    pausedMoves: {},
+    // When true, shoulder moves stop progressing until turned back on in Settings.
+    shoulderHold: false,
     // One entry per logged day: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk' | 'rest', type, number }
     log: []
   };
@@ -85,6 +92,26 @@ function movedLast7() {
   }
   const moved = new Set(state.log.filter(e => (e.kind === 'workout' || e.kind === 'walk') && days.has(e.date)).map(e => e.date));
   return moved.size;
+}
+
+/* ---------- Recording ---------- */
+
+// Saves a finished (or partly finished) workout. Partial workouts still count.
+function recordWorkout(plan, { partial = false } = {}) {
+  const entry = {
+    date: dateKey(),
+    kind: 'workout',
+    type: plan.type,
+    number: workoutsDone() + 1,
+    partial,
+    moves: plan.moves.map(m => ({ id: m.move.id, version: m.version, lb: m.weight ? m.weight.lb : null }))
+  };
+  state.log.push(entry);
+  // The queue moves on unless today's type was swapped in by hand.
+  if (!state.today || !state.today.typeOverride) state.journey.queueIndex += 1;
+  if (state.today) state.today.typeOverride = null;
+  saveState();
+  return entry;
 }
 
 /* ---------- Equipment helpers ---------- */

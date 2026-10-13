@@ -129,10 +129,10 @@
       <h2>What’s the plan today?</h2>
       <button type="button" class="primary" data-go="today">Workout now →</button>
       <div class="plan-grid">
-        <button type="button" class="choice" data-plan="Workout later. Picking a time arrives in step 6."><svg class="i"><use href="#i-clock"/></svg>Later</button>
-        <button type="button" class="choice" data-plan="Walk day. Logging walks arrives in step 6."><svg class="i"><use href="#i-walk"/></svg>Walk</button>
-        <button type="button" class="choice" data-plan="Short day. The 5-minute version arrives in step 6."><svg class="i"><use href="#i-zap"/></svg>5 min</button>
-        <button type="button" class="choice rest" data-plan="Rest day. Logging rest days arrives in step 6."><svg class="i"><use href="#i-moon"/></svg>Rest</button>
+        <button type="button" class="choice" data-plan="Workout later. Picking a time is coming soon."><svg class="i"><use href="#i-clock"/></svg>Later</button>
+        <button type="button" class="choice" data-plan="Walk day. Logging walks is coming soon."><svg class="i"><use href="#i-walk"/></svg>Walk</button>
+        <button type="button" class="choice" data-plan="Short day. The 5-minute version is coming soon."><svg class="i"><use href="#i-zap"/></svg>5 min</button>
+        <button type="button" class="choice rest" data-plan="Rest day. Logging rest days is coming soon."><svg class="i"><use href="#i-moon"/></svg>Rest</button>
       </div>
       <p class="status" role="status" id="plan-status"></p>
     </section>
@@ -150,17 +150,24 @@
     </div>
 
     <article class="card gap">
-      <p class="eyebrow">The moves · 40 sec each</p>
+      <p class="eyebrow">The moves · <span data-work-secs></span> sec each</p>
       <div id="today-moves"></div>
     </article>
 
-    <article class="card gap-s safety">
+    <article class="card gap-s safety" id="today-safety">
       <svg class="i"><use href="#i-alert"/></svg>
       <p>Shoulder day. Stop any move that causes tingling, numbness, or pain down your arm.</p>
     </article>
 
-    <button type="button" class="secondary gap" data-soon="Move previews arrive in step 4.">Preview moves</button>
-    <button type="button" class="primary gap-s" data-soon="The workout timer arrives in step 4.">Start workout →</button>
+    <article class="card gap-s">
+      <label class="setting"><span>Swap today’s type</span>
+        <select id="swap-type" aria-label="Swap today's workout type"></select>
+      </label>
+      <label class="setting"><span>Say move names out loud</span><input type="checkbox" data-field="prefs.voice"></label>
+    </article>
+
+    <button type="button" class="secondary gap" data-preview>Preview moves</button>
+    <button type="button" class="primary gap-s" data-start>Start workout →</button>
   </section>
 
   <section id="progress" class="screen" aria-label="Progress">
@@ -235,7 +242,12 @@
     <article class="card gap-s">
       <h2>Reminders</h2>
       <label class="setting"><span>Morning check-in</span><input data-field="reminders.checkinTime" type="time"></label>
-      <p class="tiny gap-s">Reminders are set up with iPhone Shortcuts. We’ll do that together in step 9.</p>
+      <p class="tiny gap-s">Reminders are set up with iPhone Shortcuts. We’ll set those up together soon.</p>
+    </article>
+
+    <article class="card gap-s" id="paused-card">
+      <h2>Paused moves</h2>
+      <div id="paused-list"></div>
     </article>
 
     <article class="card gap-s">
@@ -250,6 +262,111 @@
     <p class="tiny gap" style="text-align:center">Sunrise · version <span id="version"></span></p>
   </section>
 
+  <!-- ============ WORKOUT ============ -->
+
+  <section id="preview" class="screen workout" aria-label="Move preview">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Previous move" data-preview-back>‹</button>
+      <span class="eyebrow">Move preview</span>
+      <button type="button" class="icon-button" aria-label="Close preview" data-go="today">×</button>
+    </header>
+    <p class="eyebrow" id="pv-position"></p>
+    <div class="seg-group gap-s" role="group" aria-label="Version for today">
+      <button type="button" class="seg" data-version="easier">Easier</button>
+      <button type="button" class="seg" data-version="standard">Standard</button>
+      <button type="button" class="seg" data-version="harder">Harder</button>
+    </div>
+    <div class="visual gap-s" aria-hidden="true"><span class="visual-num" id="pv-num"></span><span class="tag" id="pv-tag"></span></div>
+    <p class="eyebrow gap" id="pv-desc"></p>
+    <h1 class="move-title gap-s" id="pv-name"></h1>
+    <p class="muted gap-s" id="pv-version"></p>
+    <article class="card gap">
+      <p class="eyebrow">Form cues</p>
+      <div id="pv-cues"></div>
+    </article>
+    <a class="secondary gap" id="pv-watch" target="_blank" rel="noopener">Watch how ▸</a>
+    <button type="button" class="primary gap-s" id="pv-next" data-preview-next>Next move →</button>
+  </section>
+
+  <section id="glance" class="screen workout" aria-label="Workout">
+    <div class="row">
+      <span class="pill" id="gl-round"></span>
+      <span class="pill" id="gl-position"></span>
+    </div>
+    <p class="eyebrow gap" id="gl-label"></p>
+    <h1 class="glance-name gap-s" id="gl-name"></h1>
+    <p class="muted gap-s" id="gl-detail"></p>
+    <div class="ring" id="gl-ring" role="timer" aria-live="off">
+      <div class="ring-inner"><span class="timer" id="gl-time"></span><span class="eyebrow">seconds</span></div>
+    </div>
+    <div class="two-buttons">
+      <button type="button" class="secondary" id="gl-pause" data-pause>Pause</button>
+      <button type="button" class="secondary" data-skip>Skip ▸</button>
+    </div>
+    <article class="card gap-s">
+      <p class="eyebrow">Next</p>
+      <p class="gap-s" id="gl-next"></p>
+    </article>
+    <button type="button" class="end-button gap-s" data-end>End workout</button>
+  </section>
+
+  <section id="okay" class="screen workout calm" aria-label="Are you okay?">
+    <div class="heart" aria-hidden="true">♥</div>
+    <h1 class="center">Are you okay?</h1>
+    <p class="muted center gap-s">Your workout is saved. Take a breath.</p>
+    <button type="button" class="big-choice gap" data-okay="fine">I’m fine, just stopping</button>
+    <button type="button" class="big-choice gap-s" data-okay="hurt">I hurt myself</button>
+  </section>
+
+  <section id="hurt" class="screen workout" aria-label="Where it hurts">
+    <h1>Let’s take care of it.</h1>
+    <article class="card gap">
+      <label class="setting stack"><span>Which move?</span>
+        <select id="hurt-move" class="full"></select>
+      </label>
+      <div class="setting stack"><span class="label">Where does it hurt?</span>
+        <div class="chips" id="hurt-area">
+          <button type="button" class="chip-btn" data-area="Shoulder">Shoulder</button>
+          <button type="button" class="chip-btn" data-area="Neck">Neck</button>
+          <button type="button" class="chip-btn" data-area="Arm or hand">Arm or hand</button>
+          <button type="button" class="chip-btn" data-area="Back">Back</button>
+          <button type="button" class="chip-btn" data-area="Hip">Hip</button>
+          <button type="button" class="chip-btn" data-area="Knee">Knee</button>
+          <button type="button" class="chip-btn" data-area="Other">Other</button>
+        </div>
+      </div>
+    </article>
+    <article class="card gap-s safety">
+      <svg class="i"><use href="#i-alert"/></svg>
+      <p>Rest it today. Contact a doctor if the pain is severe, causes numbness or tingling, or doesn’t improve.</p>
+    </article>
+    <p class="tiny gap-s">Saving pauses this move from your workouts. Shoulder moves also stop getting harder until you turn them back on in Settings.</p>
+    <button type="button" class="primary gap" data-hurt-save>Save and rest</button>
+    <a class="secondary gap-s" id="hurt-text-davis">Text Davis</a>
+  </section>
+
+  <section id="done" class="screen workout" aria-label="Workout done">
+    <header class="top">
+      <span class="brand">sunrise ☀</span>
+      <button type="button" class="icon-button" aria-label="Close" data-go="checkin">×</button>
+    </header>
+    <div class="done-sun" aria-hidden="true"><span class="spark s1">✦</span>☀<span class="spark s2">✦</span></div>
+    <p class="eyebrow center" id="dn-kicker"></p>
+    <h1 class="center gap-s" id="dn-title"></h1>
+    <p class="muted center gap-s" id="dn-message"></p>
+    <article class="card gap">
+      <div class="bar-label"><span class="eyebrow">This week</span><strong><span data-week-count></span> of <span data-week-target></span> workouts</strong></div>
+      <div class="track"><div class="fill orchid" data-week-fill></div></div>
+      <div class="bar-label" style="margin-top:18px"><span class="eyebrow">Journey</span><strong style="color:var(--gold)"><span data-done></span> of 70</strong></div>
+      <div class="track"><div class="fill" data-journey-fill></div></div>
+    </article>
+    <div class="two-cards gap-s">
+      <article class="card"><p class="eyebrow">Up next</p><h3 class="gap-s" data-next-type></h3></article>
+      <article class="card"><p class="eyebrow">Next milestone</p><h3 class="gap-s" id="dn-milestone"></h3></article>
+    </div>
+    <button type="button" class="gold-button gap" data-go="checkin">Back to my day →</button>
+  </section>
+
 </main>
 
 <nav class="nav" id="nav" aria-label="Main">
@@ -262,6 +379,8 @@
 <div class="toast" id="toast" role="status"></div>
 
 <script src="store.js"></script>
+<script src="exercises.js"></script>
+<script src="workout.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
