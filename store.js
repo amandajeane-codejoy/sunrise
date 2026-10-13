@@ -19,6 +19,8 @@ function defaultState() {
     pausedMoves: {},
     // When true, shoulder moves stop progressing until turned back on in Settings.
     shoulderHold: false,
+    // Earlier journeys, kept when restarting so nothing is truly lost.
+    archive: [],
     // One entry per logged day: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk' | 'rest', type, number }
     log: []
   };
@@ -112,6 +114,16 @@ function recordWorkout(plan, { partial = false } = {}) {
   if (state.today) state.today.typeOverride = null;
   saveState();
   return entry;
+}
+
+// Starts the journey over at Workout 1. Setup and paused moves stay.
+// The old workouts are kept in the archive, in case of a mistake.
+function restartJourney() {
+  state.archive.push({ restartedOn: dateKey(), journey: state.journey, log: state.log });
+  state.log = [];
+  state.journey = { number: state.journey.number, startedOn: dateKey(), queueIndex: 0 };
+  state.today = null;
+  saveState();
 }
 
 /* ---------- Equipment helpers ---------- */

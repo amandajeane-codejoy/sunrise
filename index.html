@@ -259,6 +259,20 @@
       </div>
     </article>
 
+    <article class="card gap-s">
+      <h2>Start over</h2>
+      <p class="tiny gap-s">Clears your workouts and starts the journey again at Workout 1. Your name, equipment, and Davis’s details stay.</p>
+      <button type="button" class="danger-outline gap-s" data-restart-ask>Restart journey</button>
+      <div class="confirm gap-s" id="restart-confirm" hidden>
+        <p><strong>Are you sure?</strong></p>
+        <p class="tiny gap-s" id="restart-detail"></p>
+        <div class="two-buttons gap-s">
+          <button type="button" class="secondary" data-restart-cancel>Cancel</button>
+          <button type="button" class="end-button" data-restart-yes>Yes, start over</button>
+        </div>
+      </div>
+    </article>
+
     <p class="tiny gap" style="text-align:center">Sunrise · version <span id="version"></span></p>
   </section>
 

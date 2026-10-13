@@ -1,4 +1,4 @@
-const VERSION = '0.5';
+const VERSION = '0.6';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'okay', 'hurt', 'done'];
@@ -15,6 +15,7 @@ function openScreen(id) {
   if (session && id !== 'glance') stopSession();
 
   render();
+  closeRestart();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.getElementById('nav').classList.toggle('hidden', !MAIN_SCREENS.includes(id));
   document.querySelectorAll('#nav button').forEach(b => {
@@ -286,6 +287,11 @@ function renderPaused() {
   document.getElementById('paused-list').innerHTML = rows.join('');
 }
 
+function closeRestart() {
+  document.getElementById('restart-confirm').hidden = true;
+  document.querySelector('[data-restart-ask]').hidden = false;
+}
+
 /* ---------- Setup flow ---------- */
 
 function finishSetup() {
@@ -362,6 +368,22 @@ document.addEventListener('click', event => {
   const unpause = t.closest('[data-unpause]');
   if (unpause) { delete state.pausedMoves[unpause.dataset.unpause]; saveState(); render(); return toast('Move turned back on'); }
   if (t.closest('[data-unhold]')) { state.shoulderHold = false; saveState(); render(); return toast('Shoulder moves will progress again'); }
+
+  if (t.closest('[data-restart-ask]')) {
+    const n = workoutsDone();
+    document.getElementById('restart-detail').textContent =
+      `This clears ${n} workout${n === 1 ? '' : 's'} and takes you back to Workout 1.`;
+    document.getElementById('restart-confirm').hidden = false;
+    document.querySelector('[data-restart-ask]').hidden = true;
+    return;
+  }
+  if (t.closest('[data-restart-cancel]')) return closeRestart();
+  if (t.closest('[data-restart-yes]')) {
+    restartJourney();
+    closeRestart();
+    openScreen('checkin');
+    return toast('Journey restarted. Workout 1 is up.');
+  }
 
   const soon = t.closest('[data-soon]');
   if (soon) return toast(soon.dataset.soon);
