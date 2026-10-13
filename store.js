@@ -13,8 +13,10 @@ function defaultState() {
     reminders: { checkinTime: '05:55' },
     journey: { number: 1, startedOn: null, queueIndex: 0 },
     prefs: { voice: false },
-    // Today's choices: { date, typeOverride, versions: { moveId: 'easier' } }
+    // Today's choices: { date, typeOverride, versions: { moveId: 'easier' }, length }
     today: null,
+    // Check-in answers by date: { 'YYYY-MM-DD': { choice: 'now'|'later'|'walk'|'short'|'rest', time, reason } }
+    dayPlans: {},
     // Moves paused after "I hurt myself": { moveId: { date, area } }
     pausedMoves: {},
     // When true, shoulder moves stop progressing until turned back on in Settings.
@@ -23,7 +25,7 @@ function defaultState() {
     moveProgress: {},
     // Earlier journeys, kept when restarting so nothing is truly lost.
     archive: [],
-    // One entry per logged day: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk' | 'rest', type, number }
+    // Logged activity: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk', type, number, length }
     log: []
   };
 }
@@ -62,6 +64,12 @@ function dateKey(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function addDays(key, n) {
+  const d = new Date(key + 'T12:00');
+  d.setDate(d.getDate() + n);
+  return dateKey(d);
+}
+
 function startOfWeek(d = new Date()) { // Monday
   const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   s.setDate(s.getDate() - ((s.getDay() + 6) % 7));
@@ -98,6 +106,40 @@ function movedLast7() {
   return moved.size;
 }
 
+/* ---------- Days: what happened on each date ---------- */
+
+// 'work', 'walk', 'rest', or null. Planned walks count as active rest.
+function dayStatus(key) {
+  if (state.log.some(e => e.date === key && e.kind === 'workout')) return 'work';
+  const plan = state.dayPlans[key];
+  if (state.log.some(e => e.date === key && e.kind === 'walk') || (plan && plan.choice === 'walk')) return 'walk';
+  if (plan && plan.choice === 'rest') return 'rest';
+  return null;
+}
+
+// A missed day: a past day in the journey with no workout, walk, or planned rest.
+function isMissed(key) {
+  const start = state.journey.startedOn;
+  return !!start && key >= start && key < dateKey() && dayStatus(key) === null;
+}
+
+// "Never two in a row": 0, 1, or 2 missed days right before today.
+function missedBeforeToday() {
+  const yesterday = addDays(dateKey(), -1);
+  if (!isMissed(yesterday)) return 0;
+  return isMissed(addDays(yesterday, -1)) ? 2 : 1;
+}
+
+function setDayPlan(key, plan) {
+  if (plan) state.dayPlans[key] = plan; else delete state.dayPlans[key];
+  saveState();
+}
+
+function logWalk(key = dateKey()) {
+  if (!state.log.some(e => e.date === key && e.kind === 'walk')) state.log.push({ date: key, kind: 'walk' });
+  saveState();
+}
+
 /* ---------- Recording ---------- */
 
 // Saves a finished (or partly finished) workout. Partial workouts still count.
@@ -107,6 +149,7 @@ function recordWorkout(plan, { partial = false } = {}) {
     kind: 'workout',
     type: plan.type,
     number: workoutsDone() + 1,
+    length: plan.length,
     partial,
     moves: plan.moves.map(m => ({ id: m.move.id, version: m.version, lb: m.weight ? m.weight.lb : null, rating: m.rating || null }))
   };

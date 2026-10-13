@@ -210,6 +210,25 @@ function weightText(weight) {
   return weight.pair ? `${weight.lb} lb each hand` : `${weight.lb} lb`;
 }
 
+/* ---------- Workout lengths ---------- */
+
+const LENGTHS = {
+  full:    { label: '15 min', name: 'Full workout', warmups: 4, rounds: 3, restSecs: 20, cooldown: 2, rate: true },
+  restart: { label: '10 min', name: '10-minute restart', warmups: 2, rounds: 2, restSecs: 20, cooldown: 1, rate: true },
+  // Short day: quick 5-second switches, so no ratings.
+  short:   { label: '5 min', name: '5-minute workout', warmups: 1, rounds: 2, restSecs: 5, cooldown: 1, rate: false, workSecs: 25 }
+};
+
+// Today's length: picked on the Today screen, else from the check-in, else full.
+function todayLength() {
+  const chosen = todayState().length;
+  if (chosen) return chosen;
+  const plan = state.dayPlans[dateKey()];
+  if (plan && plan.choice === 'short') return 'short';
+  if (missedBeforeToday() === 2) return 'restart';
+  return 'full';
+}
+
 /* ---------- Picking today's workout ---------- */
 
 function hasGear(move) {
@@ -228,7 +247,8 @@ function todayState() {
 
 function todayType() { return todayState().typeOverride || nextDayType(); }
 
-function planWorkout() {
+function planWorkout(length = todayLength()) {
+  const shape = LENGTHS[length];
   const type = todayType();
   const number = nextWorkoutNumber();
   const phase = phaseFor(number);
@@ -247,12 +267,13 @@ function planWorkout() {
   const moves = picked.map(move => {
     // A version picked in Preview wins for today.
     const set = settingsFor(move, number, overrides[move.id]);
-    return { move, version: set.version, weight: set.weight, secs: phase.workSecs + set.extraSecs };
+    return { move, version: set.version, weight: set.weight, secs: shape.workSecs || phase.workSecs + set.extraSecs };
   });
 
-  const cooldown = [MOVE_BY_ID['doorway-stretch'], MOVE_BY_ID[COOLDOWN_BY_TYPE[type]]];
-  const warmups = [0, 1, 2, 3].map(i => WARMUPS[(number + i) % WARMUPS.length]);
+  const cooldown = [MOVE_BY_ID['doorway-stretch'], MOVE_BY_ID[COOLDOWN_BY_TYPE[type]]].slice(0, shape.cooldown);
+  const warmups = Array.from({ length: shape.warmups }, (_, i) => WARMUPS[(number + i) % WARMUPS.length]);
 
-  return { type, number, workSecs: phase.workSecs, restSecs: 20, moves, warmups, cooldown,
+  return { type, number, length, lengthLabel: shape.label, rounds: shape.rounds, rate: shape.rate,
+           workSecs: shape.workSecs || phase.workSecs, restSecs: shape.restSecs, moves, warmups, cooldown,
            shoulderDay: moves.some(m => m.move.shoulder) || type === 'Shoulders & Posture' };
 }

@@ -91,7 +91,7 @@ svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .day{border:1px solid transparent;border-radius:11px;min-height:38px;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--muted)}
 .day.work{background:#694777;border-color:var(--orchid);color:var(--cream)}
 .day.walk{background:#284d53;border-color:var(--teal);color:var(--teal)}
-.day.rest{border-color:var(--border)}
+.day.rest{border-color:var(--muted)}
 .day.today{box-shadow:0 0 0 2px var(--cream)}
 .day.future{opacity:.45}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
@@ -200,3 +200,14 @@ select.full{width:100%;margin-top:8px;min-height:44px;background:#1f1634;border:
 .chip-btn.weight{min-width:72px;font-weight:800}
 .rest-pill{color:var(--teal);border-color:#3b6b6b;font-weight:800}
 .change{padding:8px 0 0;font-size:15px}
+
+/* Check-in plan */
+.note{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:12px 16px;font-size:15px}
+.note.trainer{border-color:var(--gold);color:var(--cream)}
+.plan-detail{margin-top:14px;border:1px solid var(--border);background:var(--card);border-radius:18px;padding:14px 16px}
+.plan-detail .row + .row,.plan-detail .chips{margin-top:10px}
+.plan-detail input[type=time]{min-height:42px;background:#1f1634;border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-size:16px}
+.plan-detail .primary{min-height:50px;font-size:17px;margin-top:12px}
+.plan-detail .secondary{margin-top:12px}
+.text-link{display:block;margin-left:auto;margin-right:auto;border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:14px;padding:8px}
+.done-today{color:var(--teal);font-weight:800}

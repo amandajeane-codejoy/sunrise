@@ -1,4 +1,4 @@
-const VERSION = '0.7';
+const VERSION = '0.8';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
@@ -14,6 +14,7 @@ function openScreen(id) {
   if (['okay', 'hurt', 'done'].includes(id) && !lastResult) id = 'checkin';
   if (session && id !== 'glance' && id !== 'rating') stopSession();
 
+  if (id !== 'checkin') planTarget = 'today';
   render();
   closeRestart();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
@@ -188,8 +189,6 @@ function renderCalendar() {
   const now = new Date();
   const year = now.getFullYear(), month = now.getMonth(), today = now.getDate();
   document.getElementById('cal-month').textContent = now.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
-  const kindByDate = {};
-  for (const e of state.log) kindByDate[e.date] = e.kind === 'workout' ? 'work' : e.kind;
 
   const parts = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => `<span class="dow">${d}</span>`);
   const lead = (new Date(year, month, 1).getDay() + 6) % 7; // Monday first
@@ -197,7 +196,7 @@ function renderCalendar() {
   const days = new Date(year, month + 1, 0).getDate();
   for (let d = 1; d <= days; d++) {
     const classes = ['day'];
-    const kind = kindByDate[dateKey(new Date(year, month, d))];
+    const kind = dayStatus(dateKey(new Date(year, month, d)));
     if (kind) classes.push(kind);
     if (d === today) classes.push('today');
     if (d > today) classes.push('future');
@@ -232,6 +231,7 @@ function render() {
   const lb = lightestDumbbell();
   setText('[data-gear-pill]', [state.equipment.mat ? 'Mat' : '', lb ? `${lb} lb` : ''].filter(Boolean).join(' + ') || 'No gear');
   renderToday();
+  renderCheckin();
 
   const week = weekCount(), target = Number(p.weeklyTarget) || 3;
   setText('[data-week-count]', week);
@@ -254,6 +254,9 @@ function render() {
 function renderToday() {
   const plan = planWorkout();
   setText('[data-work-secs]', plan.workSecs);
+  setText('[data-length-label]', plan.lengthLabel);
+  setText('[data-rounds]', plan.rounds);
+  document.getElementById('length-choice').value = plan.length;
   document.getElementById('today-moves').innerHTML = plan.moves.length
     ? plan.moves.map(({ move, version, weight, secs }, i) =>
         `<div class="move"><span class="move-num">${i + 1}</span><div class="move-body"><strong>${esc(move.name)}</strong>` +
@@ -266,6 +269,13 @@ function renderToday() {
   swap.innerHTML = DAY_TYPES.map(t =>
     `<option value="${esc(t)}"${t === plan.type ? ' selected' : ''}>${esc(t)}${t === nextDayType() ? ' (next in line)' : ''}</option>`).join('');
 }
+
+document.getElementById('length-choice').addEventListener('change', event => {
+  todayState().length = event.target.value;
+  saveState();
+  render();
+  toast(`${LENGTHS[event.target.value].name} today`);
+});
 
 document.getElementById('swap-type').addEventListener('change', event => {
   const today = todayState();
@@ -396,11 +406,6 @@ document.addEventListener('click', event => {
   const soon = t.closest('[data-soon]');
   if (soon) return toast(soon.dataset.soon);
 
-  const plan = t.closest('[data-plan]');
-  if (plan) {
-    document.querySelectorAll('.choice').forEach(b => b.classList.toggle('selected', b === plan));
-    document.getElementById('plan-status').textContent = plan.dataset.plan;
-  }
 });
 
 /* ---------- Start ---------- */

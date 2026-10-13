@@ -117,7 +117,7 @@
         <div style="min-width:0;flex:1">
           <p class="eyebrow">Next up</p>
           <h2 style="margin-top:6px" data-next-type></h2>
-          <p class="muted" style="margin-top:4px">15 min · <span data-gear-summary></span></p>
+          <p class="muted" style="margin-top:4px"><span data-length-label></span> · <span data-gear-summary></span></p>
         </div>
       </div>
       <div class="line"></div>
@@ -125,16 +125,19 @@
       <div class="track"><div class="fill" data-journey-fill></div></div>
     </article>
 
+    <p class="note gap" id="missed-note" hidden></p>
+
     <section class="plan" aria-label="Today's plan">
-      <h2>What’s the plan today?</h2>
-      <button type="button" class="primary" data-go="today">Workout now →</button>
+      <h2 id="plan-title">What’s the plan today?</h2>
+      <button type="button" class="primary" id="workout-now" data-workout-now>Workout now →</button>
       <div class="plan-grid">
-        <button type="button" class="choice" data-plan="Workout later. Picking a time is coming soon."><svg class="i"><use href="#i-clock"/></svg>Later</button>
-        <button type="button" class="choice" data-plan="Walk day. Logging walks is coming soon."><svg class="i"><use href="#i-walk"/></svg>Walk</button>
-        <button type="button" class="choice" data-plan="Short day. The 5-minute version is coming soon."><svg class="i"><use href="#i-zap"/></svg>5 min</button>
-        <button type="button" class="choice rest" data-plan="Rest day. Logging rest days is coming soon."><svg class="i"><use href="#i-moon"/></svg>Rest</button>
+        <button type="button" class="choice" data-choice="later"><svg class="i"><use href="#i-clock"/></svg>Later</button>
+        <button type="button" class="choice" data-choice="walk"><svg class="i"><use href="#i-walk"/></svg>Walk</button>
+        <button type="button" class="choice" data-choice="short"><svg class="i"><use href="#i-zap"/></svg>5 min</button>
+        <button type="button" class="choice rest" data-choice="rest"><svg class="i"><use href="#i-moon"/></svg>Rest</button>
       </div>
-      <p class="status" role="status" id="plan-status"></p>
+      <div id="plan-detail"></div>
+      <button type="button" class="text-link gap" id="plan-tomorrow" data-plan-tomorrow></button>
     </section>
   </section>
 
@@ -146,7 +149,7 @@
     <p class="eyebrow">Today · Workout <span data-next-number></span></p>
     <h1 class="gap-s" data-next-type></h1>
     <div class="pills gap">
-      <span class="pill">◷ 15 min</span><span class="pill">↻ 3 rounds</span><span class="pill" data-gear-pill></span>
+      <span class="pill">◷ <span data-length-label></span></span><span class="pill">↻ <span data-rounds></span> rounds</span><span class="pill" data-gear-pill></span>
     </div>
 
     <article class="card gap">
@@ -160,6 +163,13 @@
     </article>
 
     <article class="card gap-s">
+      <label class="setting"><span>Length</span>
+        <select id="length-choice" aria-label="Workout length">
+          <option value="full">Full · 15 min</option>
+          <option value="restart">Restart · 10 min</option>
+          <option value="short">Short · 5 min</option>
+        </select>
+      </label>
       <label class="setting"><span>Swap today’s type</span>
         <select id="swap-type" aria-label="Swap today's workout type"></select>
       </label>
@@ -339,7 +349,7 @@
     <div id="rt-weights-wrap">
       <p class="eyebrow gap-s">Weight used</p>
       <div class="chips" id="rt-weights"></div>
-      <p class="tiny gap-s">Changing it here also changes rounds 2 and 3.</p>
+      <p class="tiny gap-s">Changing it here also changes the rounds after this one.</p>
     </div>
     <article class="card gap-s safety compact" id="rt-safety">
       <svg class="i"><use href="#i-alert"/></svg>
@@ -425,6 +435,7 @@
 <script src="exercises.js"></script>
 <script src="progression.js"></script>
 <script src="workout.js"></script>
+<script src="checkin.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

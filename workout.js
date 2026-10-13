@@ -109,10 +109,10 @@ function setVersion(version) {
 function buildPhases(plan) {
   const phases = [];
   plan.warmups.forEach((w, i) => phases.push({ kind: 'warmup', secs: 30, name: w.name, detail: w.cue, index: i }));
-  for (let round = 1; round <= 3; round++) {
+  for (let round = 1; round <= plan.rounds; round++) {
     plan.moves.forEach((item, index) => {
       phases.push({ kind: 'work', secs: item.secs, item, round, index });
-      const lastOfAll = round === 3 && index === plan.moves.length - 1;
+      const lastOfAll = round === plan.rounds && index === plan.moves.length - 1;
       if (!lastOfAll) phases.push({ kind: 'rest', secs: plan.restSecs, round, index });
     });
   }
@@ -147,7 +147,7 @@ function startWorkout() {
 }
 
 // Round 1 rests double as the quick rating, so each move gets rated once.
-function isRatingRest(p) { return p.kind === 'rest' && p.round === 1; }
+function isRatingRest(p) { return session.plan.rate && p.kind === 'rest' && p.round === 1; }
 
 function announce() {
   const p = session.phases[session.i];
@@ -201,9 +201,9 @@ function renderGlance() {
   const total = session.plan.moves.length;
   const after = nextActive(session.i);
 
-  const round = { warmup: 'WARM-UP', cooldown: 'COOLDOWN' }[p.kind] || `ROUND ${p.round} OF 3`;
-  const position = p.kind === 'warmup' ? `${p.index + 1} OF 4`
-    : p.kind === 'cooldown' ? `${p.index + 1} OF 2`
+  const round = { warmup: 'WARM-UP', cooldown: 'COOLDOWN' }[p.kind] || `ROUND ${p.round} OF ${session.plan.rounds}`;
+  const position = p.kind === 'warmup' ? `${p.index + 1} OF ${session.plan.warmups.length}`
+    : p.kind === 'cooldown' ? `${p.index + 1} OF ${session.plan.cooldown.length}`
     : p.kind === 'rest' ? 'REST' : `MOVE ${p.index + 1} OF ${total}`;
   document.getElementById('gl-round').textContent = round;
   document.getElementById('gl-position').textContent = position;
@@ -367,6 +367,7 @@ function renderDone() {
   const morning = new Date().getHours() < 9;
   document.getElementById('dn-message').textContent = partial
     ? `Saved. That's workout ${entry.number}. Every bit counts.`
+    : entry.length === 'short' ? `Done. That's workout ${entry.number}. Five minutes still counts.`
     : `Done. That's workout ${entry.number}. ${morning ? 'Enjoy the rest of the episode.' : 'Nice work.'}`;
   const next = MILESTONES.find(m => m > entry.number) || 70;
   document.getElementById('dn-milestone').textContent = entry.number >= 70 ? 'Journey complete!' : `Workout ${next}`;

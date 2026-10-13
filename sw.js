@@ -1,5 +1,5 @@
 // Change VERSION whenever any app file changes, so phones pick up the update.
-const VERSION = 'sunrise-0.7';
+const VERSION = 'sunrise-0.8';
 const FILES = [
   './',
   'index.html',
@@ -8,6 +8,7 @@ const FILES = [
   'exercises.js',
   'progression.js',
   'workout.js',
+  'checkin.js',
   'app.js',
   'manifest.webmanifest',
   'fonts/fredoka.woff2',
