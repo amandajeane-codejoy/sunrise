@@ -245,8 +245,9 @@ function planWorkout() {
 
   const overrides = todayState().versions;
   const moves = picked.map(move => {
-    const version = overrides[move.id] || phase.version;
-    return { move, version, weight: suggestWeight(move, version) };
+    // A version picked in Preview wins for today.
+    const set = settingsFor(move, number, overrides[move.id]);
+    return { move, version: set.version, weight: set.weight, secs: phase.workSecs + set.extraSecs };
   });
 
   const cooldown = [MOVE_BY_ID['doorway-stretch'], MOVE_BY_ID[COOLDOWN_BY_TYPE[type]]];

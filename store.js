@@ -19,6 +19,8 @@ function defaultState() {
     pausedMoves: {},
     // When true, shoulder moves stop progressing until turned back on in Settings.
     shoulderHold: false,
+    // Per-move weights and versions, shaped by ratings (see progression.js).
+    moveProgress: {},
     // Earlier journeys, kept when restarting so nothing is truly lost.
     archive: [],
     // One entry per logged day: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk' | 'rest', type, number }
@@ -106,7 +108,7 @@ function recordWorkout(plan, { partial = false } = {}) {
     type: plan.type,
     number: workoutsDone() + 1,
     partial,
-    moves: plan.moves.map(m => ({ id: m.move.id, version: m.version, lb: m.weight ? m.weight.lb : null }))
+    moves: plan.moves.map(m => ({ id: m.move.id, version: m.version, lb: m.weight ? m.weight.lb : null, rating: m.rating || null }))
   };
   state.log.push(entry);
   // The queue moves on unless today's type was swapped in by hand.
@@ -119,8 +121,9 @@ function recordWorkout(plan, { partial = false } = {}) {
 // Starts the journey over at Workout 1. Setup and paused moves stay.
 // The old workouts are kept in the archive, in case of a mistake.
 function restartJourney() {
-  state.archive.push({ restartedOn: dateKey(), journey: state.journey, log: state.log });
+  state.archive.push({ restartedOn: dateKey(), journey: state.journey, log: state.log, moveProgress: state.moveProgress });
   state.log = [];
+  state.moveProgress = {};
   state.journey = { number: state.journey.number, startedOn: dateKey(), queueIndex: 0 };
   state.today = null;
   saveState();

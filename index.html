@@ -203,7 +203,7 @@
 
     <article class="card gap-s">
       <h2>Getting stronger</h2>
-      <p class="tiny gap-s">Your weights for each move will show here after a few workouts.</p>
+      <div class="gap-s" id="stronger"></div>
     </article>
 
     <article class="card gap-s">
@@ -324,6 +324,31 @@
     <button type="button" class="end-button gap-s" data-end>End workout</button>
   </section>
 
+  <section id="rating" class="screen workout" aria-label="Quick rating">
+    <div class="row">
+      <span class="eyebrow">Quick rating</span>
+      <span class="pill rest-pill" id="rt-rest" role="timer"></span>
+    </div>
+    <h1 class="rt-question gap-s" id="rt-question"></h1>
+    <p class="muted rt-intro">Shapes your next session. No tap saves as just right.</p>
+    <div class="gap-s" role="group" aria-label="How the move felt">
+      <button type="button" class="rating-option" data-rating="easy"><strong>Too easy</strong><span>go up next time</span></button>
+      <button type="button" class="rating-option" data-rating="right"><strong>Just right</strong><span>keep it</span></button>
+      <button type="button" class="rating-option" data-rating="hard"><strong>Too hard</strong><span>go down next time</span></button>
+    </div>
+    <div id="rt-weights-wrap">
+      <p class="eyebrow gap-s">Weight used</p>
+      <div class="chips" id="rt-weights"></div>
+      <p class="tiny gap-s">Changing it here also changes rounds 2 and 3.</p>
+    </div>
+    <article class="card gap-s safety compact" id="rt-safety">
+      <svg class="i"><use href="#i-alert"/></svg>
+      <p>Stop any move that causes tingling, numbness, or pain down your arm.</p>
+    </article>
+    <button type="button" class="primary gap-s" data-skip id="rt-next"></button>
+    <button type="button" class="end-button" style="margin-top:24px" data-end>End workout</button>
+  </section>
+
   <section id="okay" class="screen workout calm" aria-label="Are you okay?">
     <div class="heart" aria-hidden="true">♥</div>
     <h1 class="center">Are you okay?</h1>
@@ -374,6 +399,10 @@
       <div class="bar-label" style="margin-top:18px"><span class="eyebrow">Journey</span><strong style="color:var(--gold)"><span data-done></span> of 70</strong></div>
       <div class="track"><div class="fill" data-journey-fill></div></div>
     </article>
+    <article class="card gap-s" id="dn-changes-card" hidden>
+      <p class="eyebrow">Next time</p>
+      <div id="dn-changes"></div>
+    </article>
     <div class="two-cards gap-s">
       <article class="card"><p class="eyebrow">Up next</p><h3 class="gap-s" data-next-type></h3></article>
       <article class="card"><p class="eyebrow">Next milestone</p><h3 class="gap-s" id="dn-milestone"></h3></article>
@@ -394,6 +423,7 @@
 
 <script src="store.js"></script>
 <script src="exercises.js"></script>
+<script src="progression.js"></script>
 <script src="workout.js"></script>
 <script src="app.js"></script>
 </body>

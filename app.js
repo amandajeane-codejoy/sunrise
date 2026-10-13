@@ -1,7 +1,7 @@
-const VERSION = '0.6';
+const VERSION = '0.7';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
-const WORKOUT_SCREENS = ['preview', 'glance', 'okay', 'hurt', 'done'];
+const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
 const TAB_FOR = { checkin: 'today', today: 'today', progress: 'progress', settings: 'settings' };
 
 /* ---------- Navigation ---------- */
@@ -10,9 +10,9 @@ function openScreen(id) {
   if (!state.setupDone && !SETUP_SCREENS.includes(id)) id = 'welcome';
   if (state.setupDone && !MAIN_SCREENS.includes(id) && !WORKOUT_SCREENS.includes(id)) id = 'checkin';
   // Workout screens only make sense mid-workout (for example, not after reopening the app).
-  if (id === 'glance' && !session) id = 'today';
+  if (['glance', 'rating'].includes(id) && !session) id = 'today';
   if (['okay', 'hurt', 'done'].includes(id) && !lastResult) id = 'checkin';
-  if (session && id !== 'glance') stopSession();
+  if (session && id !== 'glance' && id !== 'rating') stopSession();
 
   render();
   closeRestart();
@@ -244,6 +244,7 @@ function render() {
   renderCalendar();
   renderRecent();
   renderPaused();
+  renderStronger();
   renderDone();
   renderGearEditors();
   renderDavisEditors();
@@ -254,9 +255,9 @@ function renderToday() {
   const plan = planWorkout();
   setText('[data-work-secs]', plan.workSecs);
   document.getElementById('today-moves').innerHTML = plan.moves.length
-    ? plan.moves.map(({ move, version, weight }, i) =>
+    ? plan.moves.map(({ move, version, weight, secs }, i) =>
         `<div class="move"><span class="move-num">${i + 1}</span><div class="move-body"><strong>${esc(move.name)}</strong>` +
-        `<span class="tiny">${VERSION_LABEL[version]} · ${weightText(weight)}</span></div>` +
+        `<span class="tiny">${VERSION_LABEL[version]} · ${weightText(weight)}${secs !== plan.workSecs ? ` · ${secs} sec` : ''}</span></div>` +
         `<span class="tag${move.floor ? ' floor' : ''}">${move.floor ? 'FLOOR' : 'STAND'}</span></div>`).join('')
     : '<p class="empty-note">No moves fit your equipment for this day type. Try a swap, or add weights in Settings.</p>';
   document.getElementById('today-safety').hidden = !plan.shoulderDay;
@@ -273,6 +274,13 @@ document.getElementById('swap-type').addEventListener('change', event => {
   render();
   toast(`Today is ${todayType()}`);
 });
+
+function renderStronger() {
+  const list = strongerList();
+  document.getElementById('stronger').innerHTML = list.length
+    ? list.map(s => `<div class="lift"><span>${esc(s.name)}</span><span class="muted">${esc(s.from)} → <b>${esc(s.to)}</b></span></div>`).join('')
+    : '<p class="tiny">Moves that go up in weight or difficulty will show here.</p>';
+}
 
 function renderPaused() {
   const paused = Object.entries(state.pausedMoves);

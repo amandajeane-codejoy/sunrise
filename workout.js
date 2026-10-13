@@ -111,7 +111,7 @@ function buildPhases(plan) {
   plan.warmups.forEach((w, i) => phases.push({ kind: 'warmup', secs: 30, name: w.name, detail: w.cue, index: i }));
   for (let round = 1; round <= 3; round++) {
     plan.moves.forEach((item, index) => {
-      phases.push({ kind: 'work', secs: plan.workSecs, item, round, index });
+      phases.push({ kind: 'work', secs: item.secs, item, round, index });
       const lastOfAll = round === 3 && index === plan.moves.length - 1;
       if (!lastOfAll) phases.push({ kind: 'rest', secs: plan.restSecs, round, index });
     });
@@ -146,8 +146,16 @@ function startWorkout() {
   session.timer = setInterval(tick, 200);
 }
 
+// Round 1 rests double as the quick rating, so each move gets rated once.
+function isRatingRest(p) { return p.kind === 'rest' && p.round === 1; }
+
 function announce() {
   const p = session.phases[session.i];
+  if (isRatingRest(p)) {
+    showRating(p);
+  } else if (document.querySelector('.screen.active').id !== 'glance') {
+    openScreen('glance');
+  }
   if (p.kind === 'rest') {
     SOUNDS.rest(); buzz([300]);
     say(`Rest. Up next, ${phaseTitle(nextActive(session.i))}.`);
@@ -183,6 +191,7 @@ function renderTimer(secs) {
   const p = session.phases[session.i];
   const ring = document.getElementById('gl-ring');
   document.getElementById('gl-time').textContent = secs;
+  document.getElementById('rt-rest').textContent = `REST · 0:${String(Math.max(0, secs)).padStart(2, '0')}`;
   ring.style.setProperty('--angle', `${(secs / p.secs) * 360}deg`);
   ring.setAttribute('aria-label', `${secs} seconds left`);
 }
@@ -216,6 +225,46 @@ function renderGlance() {
     : 'Done!';
   document.getElementById('gl-pause').textContent = session.paused ? 'Resume' : 'Pause';
   renderTimer(Math.ceil((session.paused ? session.remainingMs : session.phaseEnd - Date.now()) / 1000));
+}
+
+/* ---------- Quick rating ---------- */
+
+function showRating(p) {
+  const item = session.plan.moves[p.index];
+  item.rating = item.rating || 'right';
+  session.ratingItem = item;
+  const next = session.plan.moves[p.index + 1] || session.plan.moves[0];
+  document.getElementById('rt-question').textContent = `How did ${item.move.name.toLowerCase()} feel?`;
+  document.getElementById('rt-next').textContent = `Next: ${next.move.name} →`;
+  document.getElementById('rt-safety').hidden = !(item.move.shoulder || session.plan.shoulderDay);
+  renderRatingChoices();
+  openScreen('rating');
+}
+
+function renderRatingChoices() {
+  const item = session.ratingItem;
+  document.querySelectorAll('#rating [data-rating]').forEach(b => b.classList.toggle('selected', b.dataset.rating === item.rating));
+  const owned = item.weight ? ownedWeightsFor(item.move) : [];
+  document.getElementById('rt-weights-wrap').hidden = !owned.length;
+  document.getElementById('rt-weights').innerHTML = owned.map(w =>
+    `<button type="button" class="chip-btn weight${w.lb === item.weight.lb ? ' selected' : ''}" data-weight="${w.lb}">${w.lb} lb</button>`).join('');
+}
+
+function chooseWeight(lb) {
+  const item = session.ratingItem;
+  item.weight = ownedWeightsFor(item.move).find(w => w.lb === lb) || item.weight;
+  renderRatingChoices();
+}
+
+// Turns this workout's ratings into changes for next time.
+function applyRatings(plan) {
+  const changes = [];
+  for (const item of plan.moves) {
+    if (!item.rating) continue;
+    const note = applyRating(item, item.rating);
+    if (note) changes.push(note);
+  }
+  return changes;
 }
 
 function togglePause() {
@@ -256,10 +305,11 @@ function stopSession() {
 
 function finishWorkout() {
   const s = stopSession();
+  const changes = applyRatings(s.plan);
   const entry = recordWorkout(s.plan);
   SOUNDS.done();
   say(`Done. That's workout ${entry.number}.`);
-  lastResult = { entry, partial: false };
+  lastResult = { entry, partial: false, changes };
   openScreen('done');
 }
 
@@ -270,10 +320,11 @@ function endWorkout() {
   const p = s.phases[s.i];
   const current = p.kind === 'work' ? p.item.move.id
     : p.kind === 'rest' ? s.plan.moves[p.index].move.id : s.plan.moves[0].move.id;
+  const changes = applyRatings(s.plan);
   const entry = recordWorkout(s.plan, { partial: true });
   todayState().nudgesPaused = true;
   saveState();
-  lastResult = { entry, partial: true, plan: s.plan, currentMoveId: current };
+  lastResult = { entry, partial: true, plan: s.plan, currentMoveId: current, changes };
   openScreen('okay');
 }
 
@@ -319,6 +370,9 @@ function renderDone() {
     : `Done. That's workout ${entry.number}. ${morning ? 'Enjoy the rest of the episode.' : 'Nice work.'}`;
   const next = MILESTONES.find(m => m > entry.number) || 70;
   document.getElementById('dn-milestone').textContent = entry.number >= 70 ? 'Journey complete!' : `Workout ${next}`;
+  const changes = lastResult.changes || [];
+  document.getElementById('dn-changes-card').hidden = !changes.length;
+  document.getElementById('dn-changes').innerHTML = changes.map(c => `<p class="change">${esc(c)}.</p>`).join('');
 }
 
 /* ---------- Taps ---------- */
@@ -339,6 +393,10 @@ document.addEventListener('click', event => {
   if (seg) return setVersion(seg.dataset.version);
 
   if (t.closest('[data-start]')) return startWorkout();
+  const rating = t.closest('#rating [data-rating]');
+  if (rating && session) { session.ratingItem.rating = rating.dataset.rating; return renderRatingChoices(); }
+  const weight = t.closest('#rating [data-weight]');
+  if (weight && session) return chooseWeight(Number(weight.dataset.weight));
   if (t.closest('[data-pause]')) return togglePause();
   if (t.closest('[data-skip]')) return skipPhase();
   if (t.closest('[data-end]')) return endWorkout();
