@@ -132,6 +132,7 @@
     </article>
 
     <p class="note gap" id="missed-note" hidden></p>
+    <div id="davis-cards"></div>
 
     <section class="plan" aria-label="Today's plan">
       <h2 id="plan-title">What’s the plan today?</h2>
@@ -208,11 +209,12 @@
     <h1>Progress</h1>
 
     <article class="card gap">
-      <div class="bar-label"><span class="eyebrow">This week</span><strong><span data-week-count></span> of <span data-week-target></span> workouts</strong></div>
+      <div class="bar-label"><span class="eyebrow">This week <span class="goal-met" data-goal-met hidden>✓ Goal met</span></span><strong><span data-week-count></span> of <span data-week-target></span> workouts</strong></div>
       <div class="track"><div class="fill orchid" data-week-fill></div></div>
       <div class="bar-label" style="margin-top:18px"><span class="eyebrow">Journey</span><strong style="color:var(--gold)"><span data-done></span> of 70</strong></div>
       <div class="track"><div class="fill" data-journey-fill></div></div>
       <p class="tiny gap-s" data-moved></p>
+      <p class="tiny" data-goal-weeks></p>
     </article>
 
     <article class="card gap-s">
@@ -267,6 +269,7 @@
     <article class="card gap-s">
       <h2>Davis</h2>
       <div data-davis-editor></div>
+      <button type="button" class="secondary gap-s" data-go="davis-summary">See this week’s summary</button>
     </article>
 
     <article class="card gap-s">
@@ -317,6 +320,24 @@
     </article>
 
     <p class="tiny gap" style="text-align:center">Sunrise · version <span id="version"></span></p>
+  </section>
+
+  <!-- ============ DAVIS ============ -->
+
+  <section id="davis-summary" class="screen workout" aria-label="Weekly summary for Davis">
+    <header class="top">
+      <button type="button" class="icon-button" aria-label="Back" data-go="checkin">‹</button>
+      <span class="pill" id="ds-week"></span>
+    </header>
+    <p class="eyebrow">Sunday summary</p>
+    <h1 class="gap-s" id="ds-title">Weekly update for Davis</h1>
+    <p class="note gap" id="ds-off" hidden>The Sunday summary is turned off in Settings. You can still send this one.</p>
+    <div class="bubble gap" id="ds-message"></div>
+    <p class="tiny gap-s">Messages opens with this text ready. Tap send there.</p>
+    <p class="note gap-s" id="ds-no-phone" hidden>Add his phone number in Settings so Messages fills it in for you.</p>
+    <a class="primary gap" id="ds-send">Text Davis</a>
+    <button type="button" class="secondary gap-s" id="ds-skip">Not this week</button>
+    <p class="status center" id="ds-status" role="status"></p>
   </section>
 
   <!-- ============ WORKOUT ============ -->
@@ -473,6 +494,7 @@
 <script src="progression.js"></script>
 <script src="workout.js"></script>
 <script src="checkin.js"></script>
+<script src="davis.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

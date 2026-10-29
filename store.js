@@ -24,6 +24,8 @@ function defaultState() {
     shoulderHold: false,
     // Per-move weights and versions, shaped by ratings (see progression.js).
     moveProgress: {},
+    // Messages to Davis that were sent or skipped: { 'summary:YYYY-MM-DD' | 'alert:YYYY-MM-DD': { status, at } }
+    davisLog: {},
     // Earlier journeys, kept when restarting so nothing is truly lost.
     archive: [],
     // Logged activity: { date: 'YYYY-MM-DD', kind: 'workout' | 'walk', type, number, length }
@@ -171,20 +173,6 @@ function restartJourney() {
   state.journey = { number: state.journey.number, startedOn: dateKey(), queueIndex: 0 };
   state.today = null;
   saveState();
-}
-
-/* ---------- Equipment helpers ---------- */
-
-function lightestDumbbell() {
-  const w = state.equipment.dumbbells.map(d => d.lb);
-  return w.length ? Math.min(...w) : null;
-}
-
-function gearSummary() {
-  const parts = [];
-  if (state.equipment.mat) parts.push('mat');
-  if (state.equipment.dumbbells.length) parts.push('light dumbbells');
-  return parts.length ? parts.join(' + ') : 'no gear needed';
 }
 
 /* ---------- Back up and restore ---------- */

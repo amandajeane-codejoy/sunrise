@@ -239,3 +239,11 @@ select.full{width:100%;margin-top:8px;min-height:44px;background:#1f1634;border:
 /* Stretches on the Today screen */
 .stretch-line{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.4}
 .stretch-line b{color:var(--cream);font-weight:800}
+
+/* Davis */
+.davis-card{margin-top:14px;border-color:var(--orchid)}
+.davis-card .quote{margin-top:10px}
+.primary.small{min-height:48px;font-size:16px}
+a.primary{color:var(--bg)}
+.bubble{background:#2f6fed;color:#fff;border-radius:20px 20px 6px 20px;padding:14px 16px;font-size:17px;line-height:1.4;margin-left:24px}
+.goal-met{color:var(--teal);letter-spacing:.05em;margin-left:6px}

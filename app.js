@@ -1,7 +1,7 @@
-const VERSION = '0.12';
+const VERSION = '0.13';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
-const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
+const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done', 'davis-summary'];
 const TAB_FOR = { checkin: 'today', today: 'today', progress: 'progress', settings: 'settings' };
 
 /* ---------- Navigation ---------- */
@@ -225,7 +225,6 @@ function render() {
   const done = workoutsDone();
   setText('[data-next-number]', nextWorkoutNumber());
   setText('[data-next-type]', todayType());
-  setText('[data-gear-summary]', gearSummary());
   setText('[data-done]', done);
   document.querySelectorAll('[data-journey-fill]').forEach(el => el.style.width = `${(done / JOURNEY_LENGTH) * 100}%`);
 
@@ -234,14 +233,20 @@ function render() {
   const lbs = [...new Set(plan.moves.filter(m => m.weight).map(m => m.weight.lb))].sort((a, b) => a - b);
   const needsMat = state.equipment.mat && [...plan.moves.map(m => m.move), ...plan.cooldown].some(m => m.floor);
   setText('[data-gear-pill]', [needsMat ? 'Mat' : '', lbs.length ? `${lbs.join(' & ')} lb` : ''].filter(Boolean).join(' + ') || 'No weights');
+  setText('[data-gear-summary]', [needsMat ? 'mat' : '', lbs.length ? `${lbs.join(' & ')} lb weights` : ''].filter(Boolean).join(' + ') || 'no gear needed');
   renderToday();
   renderCheckin();
+  renderDavisCards();
+  renderDavisSummary();
 
   const week = weekCount(), target = Number(p.weeklyTarget) || 3;
   setText('[data-week-count]', week);
   setText('[data-week-target]', target);
   setText('[data-month-count]', monthCount());
-  document.querySelector('[data-week-fill]').style.width = `${Math.min(1, week / target) * 100}%`;
+  document.querySelectorAll('[data-week-fill]').forEach(el => el.style.width = `${Math.min(1, week / target) * 100}%`);
+  document.querySelectorAll('[data-goal-met]').forEach(el => el.hidden = week < target);
+  const goalWeeks = goalWeeksCount();
+  setText('[data-goal-weeks]', goalWeeks ? `Weekly goal met ${goalWeeks === 1 ? 'once' : goalWeeks + ' times'} so far.` : '');
   const moved = movedLast7();
   setText('[data-moved]', state.log.length ? `Moved ${moved} of the last 7 days.` : 'Your journey starts today.');
 
@@ -308,6 +313,19 @@ document.getElementById('swap-type').addEventListener('change', event => {
   render();
   toast(`Today is ${todayType()}`);
 });
+
+// Weeks (Monday to Sunday) since the journey began where the weekly goal was met.
+function goalWeeksCount() {
+  if (!state.journey.startedOn) return 0;
+  const target = Number(state.profile.weeklyTarget) || 3;
+  let monday = dateKey(startOfWeek(new Date(state.journey.startedOn + 'T12:00')));
+  let count = 0;
+  while (monday <= dateKey()) {
+    if (weekStats(monday).workouts >= target) count += 1;
+    monday = addDays(monday, 7);
+  }
+  return count;
+}
 
 /* ---------- Skipping a day type ---------- */
 
