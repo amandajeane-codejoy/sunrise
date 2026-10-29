@@ -1,4 +1,4 @@
-const VERSION = '0.9';
+const VERSION = '0.10';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
@@ -228,8 +228,11 @@ function render() {
   setText('[data-done]', done);
   document.querySelectorAll('[data-journey-fill]').forEach(el => el.style.width = `${(done / JOURNEY_LENGTH) * 100}%`);
 
-  const lb = lightestDumbbell();
-  setText('[data-gear-pill]', [state.equipment.mat ? 'Mat' : '', lb ? `${lb} lb` : ''].filter(Boolean).join(' + ') || 'No gear');
+  // The weights today's workout actually uses, plus the mat if a floor move needs it.
+  const plan = planWorkout();
+  const lbs = [...new Set(plan.moves.filter(m => m.weight).map(m => m.weight.lb))].sort((a, b) => a - b);
+  const needsMat = state.equipment.mat && [...plan.moves.map(m => m.move), ...plan.cooldown].some(m => m.floor);
+  setText('[data-gear-pill]', [needsMat ? 'Mat' : '', lbs.length ? `${lbs.join(' & ')} lb` : ''].filter(Boolean).join(' + ') || 'No weights');
   renderToday();
   renderCheckin();
 
@@ -264,6 +267,14 @@ function renderToday() {
         `<span class="tag${move.floor ? ' floor' : ''}">${move.floor ? 'FLOOR' : 'STAND'}</span></div>`).join('')
     : '<p class="empty-note">No moves fit your equipment for this day type. Try a swap, or add weights in Settings.</p>';
   document.getElementById('today-safety').hidden = !plan.shoulderDay;
+
+  const gathered = todayState().gathered || [];
+  const items = gatherList(plan);
+  const got = items.filter(i => gathered.includes(i.key)).length;
+  document.getElementById('gather-count').textContent = got === items.length ? 'All set ✓' : `${got} of ${items.length}`;
+  document.getElementById('gather-list').innerHTML = items.map(i =>
+    `<button type="button" class="gather-item${gathered.includes(i.key) ? ' got' : ''}" data-gather="${i.key}" aria-pressed="${gathered.includes(i.key)}">` +
+    `<span class="check" aria-hidden="true"></span>${esc(i.label)}</button>`).join('');
 
   setText('[data-skip-to]', followingType());
   document.querySelectorAll('[data-undo-skip]').forEach(b => b.hidden = !todayState().skips);
@@ -416,6 +427,16 @@ document.addEventListener('click', event => {
 
   if (t.closest('[data-backup]')) return backUp();
   if (t.closest('[data-restore]')) return document.getElementById('restore-file').click();
+
+  const gather = t.closest('[data-gather]');
+  if (gather) {
+    const today = todayState();
+    const list = today.gathered = today.gathered || [];
+    const key = gather.dataset.gather;
+    if (list.includes(key)) list.splice(list.indexOf(key), 1); else list.push(key);
+    saveState();
+    return renderToday();
+  }
 
   if (t.closest('[data-skip-type]')) return skipDayType();
   if (t.closest('[data-undo-skip]')) return undoSkip();

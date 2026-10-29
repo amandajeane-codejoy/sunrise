@@ -219,3 +219,12 @@ select.full{width:100%;margin-top:8px;min-height:44px;background:#1f1634;border:
 .skip-btn:active{transform:scale(.97)}
 .skip-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
 .undo-link{border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
+
+/* What you'll need */
+.gather{margin-top:6px}
+.gather-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);background:transparent;padding:11px 0;font-size:16px;min-height:46px}
+.gather-item:last-child{border-bottom:0;padding-bottom:0}
+.gather-item .check{width:24px;height:24px;flex:none;border-radius:8px;border:2px solid var(--border);display:grid;place-items:center}
+.gather-item.got{color:var(--muted)}
+.gather-item.got .check{background:var(--teal);border-color:var(--teal)}
+.gather-item.got .check:after{content:'✓';color:var(--bg);font-weight:800;font-size:15px}

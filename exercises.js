@@ -6,6 +6,7 @@
 //   gear      'db' dumbbell, 'kb' kettlebell (falls back to a dumbbell), or null
 //   requires  gear that must be owned for the move to be picked at all
 //   weighted  which versions use a weight (default: all, when gear is set)
+//   oneWeight uses a single dumbbell, even when a pair is owned
 //   level     starting weight level: light, medium, heavy
 //   video     "Watch how" link to a physical therapist or trainer demo (null = none yet)
 // No overhead pressing in v1.
@@ -41,7 +42,7 @@ const MOVES = [
     video: 'https://library.theprehabguys.com/vimeo-video/prone-ys-unsupported/' },
 
   // ---------- Lower Body ----------
-  { id: 'squat', name: 'Squat', type: 'Lower Body', floor: false, shoulder: false, gear: 'db', level: 'medium', weighted: ['harder'],
+  { id: 'squat', name: 'Squat', type: 'Lower Body', floor: false, shoulder: false, gear: 'db', oneWeight: true, level: 'medium', weighted: ['harder'],
     versions: { easier: 'Sit-to-stand from a chair', standard: 'Bodyweight squat', harder: 'Goblet squat, holding one weight' },
     cues: ['Feet hip-width, toes slightly out.', 'Sit back like you are reaching for a chair.', 'Push through your whole foot to stand.'],
     video: null },
@@ -71,7 +72,7 @@ const MOVES = [
     versions: { easier: 'Wall push-up', standard: 'Counter push-up', harder: 'Knee push-up on the floor' },
     cues: ['Hands a little wider than your shoulders.', 'Keep a straight line from head to heels.', 'Lower your chest, then press away.'],
     video: null },
-  { id: 'one-arm-row', name: 'Single-arm dumbbell row', type: 'Upper Body', floor: false, shoulder: false, gear: 'db', requires: 'db', level: 'medium',
+  { id: 'one-arm-row', name: 'Single-arm dumbbell row', type: 'Upper Body', floor: false, shoulder: false, gear: 'db', oneWeight: true, requires: 'db', level: 'medium',
     versions: { easier: 'Hand on a chair', standard: 'Hand on a counter', harder: 'Pause 2 seconds at the top' },
     cues: ['Brace one hand on a chair or counter.', 'Pull the weight toward your hip.', 'Lower with control. Switch sides each round.'],
     video: null },
@@ -97,7 +98,7 @@ const MOVES = [
     versions: { easier: 'Slow march', standard: 'Knee toward the opposite hand', harder: 'Quicker pace' },
     cues: ['Stand tall, hands at your chest.', 'Lift one knee toward your middle.', 'Brace your stomach the whole time.'],
     video: null },
-  { id: 'side-bends', name: 'Standing side bends', type: 'Core', floor: false, shoulder: false, gear: 'db', level: 'light', weighted: ['standard', 'harder'],
+  { id: 'side-bends', name: 'Standing side bends', type: 'Core', floor: false, shoulder: false, gear: 'db', oneWeight: true, level: 'light', weighted: ['standard', 'harder'],
     versions: { easier: 'No weight', standard: 'One light dumbbell', harder: 'Slow 3-second return' },
     cues: ['Feet hip-width, weight in one hand.', 'Lean sideways toward the weight, then return.', 'Switch sides each round.'],
     video: null },
@@ -208,6 +209,49 @@ function weightText(weight) {
   if (!weight) return 'no weight';
   if (weight.kind === 'kb') return `${weight.lb} lb kettlebell`;
   return weight.pair ? `${weight.lb} lb each hand` : `${weight.lb} lb`;
+}
+
+/* ---------- What to gather before starting ---------- */
+
+// Household things a move might need. Found in the text of today's version;
+// props marked fromCues are also found in the form cues ("step" and "chair"
+// are not, since cues use them loosely, like "step one foot back").
+const PROPS = [
+  { key: 'chair', words: ['chair'], label: 'A sturdy chair' },
+  { key: 'counter', words: ['counter'], label: 'A counter or table to lean on' },
+  { key: 'step', words: ['step', 'stair', 'rail'], label: 'A step or the bottom stair' },
+  { key: 'wall', words: ['wall'], label: 'A clear spot on a wall', fromCues: true },
+  { key: 'towel', words: ['towel', 'padded'], label: 'A small towel', fromCues: true },
+  { key: 'doorway', words: ['door frame', 'doorway'], label: 'A doorway, for the chest stretch', fromCues: true }
+];
+
+function gatherList(plan) {
+  const items = [];
+  // Weights, lightest first. A pair is only listed when a move uses both hands.
+  const weights = new Map();
+  for (const { move, weight } of plan.moves) {
+    if (!weight) continue;
+    const key = `${weight.kind}-${weight.lb}`;
+    const both = weight.kind === 'db' && weight.pair && !move.oneWeight;
+    const label = weight.kind === 'kb' ? `${weight.lb} lb kettlebell`
+      : both ? `Pair of ${weight.lb} lb dumbbells` : `One ${weight.lb} lb dumbbell`;
+    if (!weights.has(key) || both) weights.set(key, { lb: weight.lb, label });
+  }
+  [...weights.entries()].sort((a, b) => a[1].lb - b[1].lb)
+    .forEach(([key, w]) => items.push({ key: `weight-${key}`, label: w.label }));
+
+  const allMoves = [...plan.moves.map(m => m.move), ...plan.cooldown];
+  if (state.equipment.mat && allMoves.some(m => m.floor)) items.push({ key: 'mat', label: 'Yoga mat' });
+
+  const versionText = plan.moves.map(({ move, version }) => versionsOf(move)[version]).join(' ').toLowerCase();
+  const cueText = [...plan.moves.map(m => m.move), ...plan.cooldown].map(m => m.cues.join(' ')).join(' ').toLowerCase();
+  for (const prop of PROPS) {
+    const text = prop.fromCues ? versionText + ' ' + cueText : versionText;
+    if (prop.words.some(w => text.includes(w))) items.push({ key: prop.key, label: prop.label });
+  }
+
+  items.push({ key: 'water', label: 'A glass of water' });
+  return items;
 }
 
 /* ---------- Workout lengths ---------- */
