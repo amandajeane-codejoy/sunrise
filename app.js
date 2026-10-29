@@ -1,4 +1,4 @@
-const VERSION = '0.10';
+const VERSION = '0.11';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
@@ -68,6 +68,7 @@ document.addEventListener('change', event => {
   if (!el) return;
   let value = el.type === 'checkbox' ? el.checked : el.value;
   if (el.type === 'number') value = Math.min(7, Math.max(1, Math.round(Number(value)) || 3));
+  if ('number' in el.dataset) value = Number(value);
   if (typeof value === 'string') value = value.trim();
   setPath(el.dataset.field, value);
   saveState();

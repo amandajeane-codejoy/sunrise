@@ -257,8 +257,9 @@ function gatherList(plan) {
 /* ---------- Workout lengths ---------- */
 
 const LENGTHS = {
-  full:    { label: '15 min', name: 'Full workout', warmups: 4, rounds: 3, restSecs: 20, cooldown: 2, rate: true },
-  restart: { label: '10 min', name: '10-minute restart', warmups: 2, rounds: 2, restSecs: 20, cooldown: 1, rate: true },
+  // restSecs: null means use the Rest between moves setting.
+  full:    { label: '15 min', name: 'Full workout', warmups: 4, rounds: 3, restSecs: null, cooldown: 2, rate: true },
+  restart: { label: '10 min', name: '10-minute restart', warmups: 2, rounds: 2, restSecs: null, cooldown: 1, rate: true },
   // Short day: quick 5-second switches, so no ratings.
   short:   { label: '5 min', name: '5-minute workout', warmups: 1, rounds: 2, restSecs: 5, cooldown: 1, rate: false, workSecs: 25 }
 };
@@ -318,6 +319,6 @@ function planWorkout(length = todayLength()) {
   const warmups = Array.from({ length: shape.warmups }, (_, i) => WARMUPS[(number + i) % WARMUPS.length]);
 
   return { type, number, length, lengthLabel: shape.label, rounds: shape.rounds, rate: shape.rate,
-           workSecs: shape.workSecs || phase.workSecs, restSecs: shape.restSecs, moves, warmups, cooldown,
+           workSecs: shape.workSecs || phase.workSecs, restSecs: shape.restSecs || Number(state.prefs.restSecs) || 30, moves, warmups, cooldown,
            shoulderDay: moves.some(m => m.move.shoulder) || type === 'Shoulders & Posture' };
 }

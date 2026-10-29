@@ -12,7 +12,8 @@ function defaultState() {
     davis: { name: 'Davis', phone: '', weeklySummary: true, twoDayAlert: true },
     reminders: { checkinTime: '05:55' },
     journey: { number: 1, startedOn: null, queueIndex: 0 },
-    prefs: { voice: false },
+    // restSecs: rest between moves in full and restart workouts.
+    prefs: { voice: false, restSecs: 30 },
     // Today's choices: { date, typeOverride, versions: { moveId: 'easier' }, length }
     today: null,
     // Check-in answers by date: { 'YYYY-MM-DD': { choice: 'now'|'later'|'walk'|'short'|'rest', time, reason } }

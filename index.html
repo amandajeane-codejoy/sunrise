@@ -265,6 +265,19 @@
     </article>
 
     <article class="card gap-s">
+      <h2>Workout</h2>
+      <label class="setting"><span>Rest between moves</span>
+        <select data-field="prefs.restSecs" data-number>
+          <option value="20">20 seconds</option>
+          <option value="30">30 seconds</option>
+          <option value="45">45 seconds</option>
+          <option value="60">60 seconds</option>
+        </select>
+      </label>
+      <p class="tiny gap-s">During any rest, tap +15 sec for extra time. The 5-minute workout keeps quick 5-second switches.</p>
+    </article>
+
+    <article class="card gap-s">
       <h2>Reminders</h2>
       <label class="setting"><span>Morning check-in</span><input data-field="reminders.checkinTime" type="time"></label>
       <p class="tiny gap-s">Reminders are set up with iPhone Shortcuts. We’ll set those up together soon.</p>
@@ -338,8 +351,9 @@
     <div class="ring" id="gl-ring" role="timer" aria-live="off">
       <div class="ring-inner"><span class="timer" id="gl-time"></span><span class="eyebrow">seconds</span></div>
     </div>
-    <div class="two-buttons">
+    <div class="timer-buttons">
       <button type="button" class="secondary" id="gl-pause" data-pause>Pause</button>
+      <button type="button" class="secondary" id="gl-more" data-more-rest hidden>+15 sec</button>
       <button type="button" class="secondary" data-skip>Skip ▸</button>
     </div>
     <article class="card gap-s">
@@ -352,7 +366,10 @@
   <section id="rating" class="screen workout" aria-label="Quick rating">
     <div class="row">
       <span class="eyebrow">Quick rating</span>
-      <span class="pill rest-pill" id="rt-rest" role="timer"></span>
+      <span class="rest-tools">
+        <button type="button" class="more-rest" data-more-rest>+15 sec</button>
+        <span class="pill rest-pill" id="rt-rest" role="timer"></span>
+      </span>
     </div>
     <h1 class="rt-question gap-s" id="rt-question"></h1>
     <p class="muted rt-intro">Shapes your next session. No tap saves as just right.</p>

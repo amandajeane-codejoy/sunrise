@@ -224,6 +224,7 @@ function renderGlance() {
     ? phaseTitle(later) + (later.kind === 'work' ? ` · ${weightText(later.item.weight)}` : '')
     : 'Done!';
   document.getElementById('gl-pause').textContent = session.paused ? 'Resume' : 'Pause';
+  document.getElementById('gl-more').hidden = p.kind !== 'rest';
   renderTimer(Math.ceil((session.paused ? session.remainingMs : session.phaseEnd - Date.now()) / 1000));
 }
 
@@ -265,6 +266,19 @@ function applyRatings(plan) {
     if (note) changes.push(note);
   }
   return changes;
+}
+
+// Extra time during a rest, for moving to the stairs, changing weights, and so on.
+function addRestTime() {
+  if (!session) return;
+  const p = session.phases[session.i];
+  if (p.kind !== 'rest') return;
+  p.secs += 15;
+  if (session.paused) session.remainingMs += 15000; else session.phaseEnd += 15000;
+  session.shownSecs = null;
+  tick();
+  if (session.paused) renderGlance();
+  toast('+15 seconds');
 }
 
 function togglePause() {
@@ -399,6 +413,7 @@ document.addEventListener('click', event => {
   const weight = t.closest('#rating [data-weight]');
   if (weight && session) return chooseWeight(Number(weight.dataset.weight));
   if (t.closest('[data-pause]')) return togglePause();
+  if (t.closest('[data-more-rest]')) return addRestTime();
   if (t.closest('[data-skip]')) return skipPhase();
   if (t.closest('[data-end]')) return endWorkout();
 
