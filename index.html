@@ -115,8 +115,14 @@
       <div class="row" style="align-items:flex-start;justify-content:flex-start;gap:14px">
         <div class="next-icon"><svg class="i"><use href="#i-dumbbell"/></svg></div>
         <div style="min-width:0;flex:1">
-          <p class="eyebrow">Next up</p>
-          <h2 style="margin-top:6px" data-next-type></h2>
+          <div class="row">
+            <p class="eyebrow">Next up</p>
+            <span class="skip-col">
+              <button type="button" class="undo-link" data-undo-skip hidden>Undo</button>
+              <button type="button" class="skip-btn" data-skip-type aria-label="Skip this workout type today">Skip ›</button>
+            </span>
+          </div>
+          <h2 style="margin-top:4px" data-next-type></h2>
           <p class="muted" style="margin-top:4px"><span data-length-label></span> · <span data-gear-summary></span></p>
         </div>
       </div>
@@ -148,6 +154,10 @@
     </header>
     <p class="eyebrow">Today · Workout <span data-next-number></span></p>
     <h1 class="gap-s" data-next-type></h1>
+    <div class="skip-row">
+      <button type="button" class="skip-btn" data-skip-type>Not today? Skip to <span data-skip-to></span> ›</button>
+      <button type="button" class="undo-link" data-undo-skip hidden>Undo skip</button>
+    </div>
     <div class="pills gap">
       <span class="pill">◷ <span data-length-label></span></span><span class="pill">↻ <span data-rounds></span> rounds</span><span class="pill" data-gear-pill></span>
     </div>

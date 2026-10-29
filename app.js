@@ -1,4 +1,4 @@
-const VERSION = '0.8';
+const VERSION = '0.9';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
@@ -265,6 +265,9 @@ function renderToday() {
     : '<p class="empty-note">No moves fit your equipment for this day type. Try a swap, or add weights in Settings.</p>';
   document.getElementById('today-safety').hidden = !plan.shoulderDay;
 
+  setText('[data-skip-to]', followingType());
+  document.querySelectorAll('[data-undo-skip]').forEach(b => b.hidden = !todayState().skips);
+
   const swap = document.getElementById('swap-type');
   swap.innerHTML = DAY_TYPES.map(t =>
     `<option value="${esc(t)}"${t === plan.type ? ' selected' : ''}>${esc(t)}${t === nextDayType() ? ' (next in line)' : ''}</option>`).join('');
@@ -284,6 +287,37 @@ document.getElementById('swap-type').addEventListener('change', event => {
   render();
   toast(`Today is ${todayType()}`);
 });
+
+/* ---------- Skipping a day type ---------- */
+
+// The type that comes after today's in the rotation.
+function followingType() {
+  return DAY_TYPES[(state.journey.queueIndex + 1) % DAY_TYPES.length];
+}
+
+// Moves the rotation forward, so today's type goes to the back of the line.
+function skipDayType() {
+  const today = todayState();
+  const skipped = todayType();
+  today.typeOverride = null;
+  today.versions = {};
+  state.journey.queueIndex += 1;
+  today.skips = (today.skips || 0) + 1;
+  saveState();
+  render();
+  toast(`${skipped} skipped. Today is ${todayType()}.`);
+}
+
+function undoSkip() {
+  const today = todayState();
+  if (!today.skips) return;
+  state.journey.queueIndex -= 1;
+  today.skips -= 1;
+  today.typeOverride = null;
+  saveState();
+  render();
+  toast(`Back to ${todayType()}.`);
+}
 
 function renderStronger() {
   const list = strongerList();
@@ -382,6 +416,9 @@ document.addEventListener('click', event => {
 
   if (t.closest('[data-backup]')) return backUp();
   if (t.closest('[data-restore]')) return document.getElementById('restore-file').click();
+
+  if (t.closest('[data-skip-type]')) return skipDayType();
+  if (t.closest('[data-undo-skip]')) return undoSkip();
 
   const unpause = t.closest('[data-unpause]');
   if (unpause) { delete state.pausedMoves[unpause.dataset.unpause]; saveState(); render(); return toast('Move turned back on'); }

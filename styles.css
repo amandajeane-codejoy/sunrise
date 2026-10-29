@@ -211,3 +211,11 @@ select.full{width:100%;margin-top:8px;min-height:44px;background:#1f1634;border:
 .plan-detail .secondary{margin-top:12px}
 .text-link{display:block;margin-left:auto;margin-right:auto;border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:14px;padding:8px}
 .done-today{color:var(--teal);font-weight:800}
+
+/* Skip a day type */
+.skip-col{display:flex;align-items:center;gap:6px;flex:none}
+.next-card .skip-btn{padding:5px 11px;min-height:32px}
+.skip-btn{border:1px solid var(--border);background:#1f1634;color:var(--cream);border-radius:100px;padding:7px 12px;font-size:13px;font-weight:800;min-height:36px}
+.skip-btn:active{transform:scale(.97)}
+.skip-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.undo-link{border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
