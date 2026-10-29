@@ -1,4 +1,4 @@
-const VERSION = '0.11';
+const VERSION = '0.12';
 const MAIN_SCREENS = ['checkin', 'today', 'progress', 'settings'];
 const SETUP_SCREENS = ['welcome', 'setup-you', 'setup-gear', 'setup-davis', 'setup-ready'];
 const WORKOUT_SCREENS = ['preview', 'glance', 'rating', 'okay', 'hurt', 'done'];
@@ -268,6 +268,15 @@ function renderToday() {
         `<span class="tag${move.floor ? ' floor' : ''}">${move.floor ? 'FLOOR' : 'STAND'}</span></div>`).join('')
     : '<p class="empty-note">No moves fit your equipment for this day type. Try a swap, or add weights in Settings.</p>';
   document.getElementById('today-safety').hidden = !plan.shoulderDay;
+
+  const names = list => list.map(s => esc(s.name)).join(', ');
+  document.getElementById('today-stretches').innerHTML =
+    (plan.stretchesBefore.length ? `<p class="stretch-line"><b>Before</b> · ${names(plan.stretchesBefore)}</p>` : '') +
+    `<p class="stretch-line"><b>After</b> · ${names(plan.cooldown)}</p>`;
+  for (const option of document.getElementById('length-choice').options) {
+    const label = { full: 'Full', restart: 'Restart', short: 'Short' }[option.value];
+    option.textContent = `${label} · ${planWorkout(option.value).lengthLabel}`;
+  }
 
   const gathered = todayState().gathered || [];
   const items = gatherList(plan);

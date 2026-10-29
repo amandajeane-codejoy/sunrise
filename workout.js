@@ -108,7 +108,7 @@ function setVersion(version) {
 
 function buildPhases(plan) {
   const phases = [];
-  plan.warmups.forEach((w, i) => phases.push({ kind: 'warmup', secs: 30, name: w.name, detail: w.cue, index: i }));
+  plan.warmups.forEach((w, i) => phases.push({ kind: 'warmup', part: w.part, secs: 30, name: w.name, detail: w.cue, index: i }));
   for (let round = 1; round <= plan.rounds; round++) {
     plan.moves.forEach((item, index) => {
       phases.push({ kind: 'work', secs: item.secs, item, round, index });
@@ -201,14 +201,15 @@ function renderGlance() {
   const total = session.plan.moves.length;
   const after = nextActive(session.i);
 
-  const round = { warmup: 'WARM-UP', cooldown: 'COOLDOWN' }[p.kind] || `ROUND ${p.round} OF ${session.plan.rounds}`;
+  const round = { warmup: 'WARM-UP', cooldown: 'STRETCH' }[p.kind] || `ROUND ${p.round} OF ${session.plan.rounds}`;
   const position = p.kind === 'warmup' ? `${p.index + 1} OF ${session.plan.warmups.length}`
     : p.kind === 'cooldown' ? `${p.index + 1} OF ${session.plan.cooldown.length}`
     : p.kind === 'rest' ? 'REST' : `MOVE ${p.index + 1} OF ${total}`;
   document.getElementById('gl-round').textContent = round;
   document.getElementById('gl-position').textContent = position;
 
-  const label = { warmup: 'Warm-up', work: 'You’re doing', rest: 'Rest · up next', cooldown: 'Stretch' }[p.kind];
+  const label = p.kind === 'warmup' && p.part === 'stretch' ? 'Warm-up stretch'
+    : { warmup: 'Warm-up', work: 'You’re doing', rest: 'Rest · up next', cooldown: 'Cool-down stretch · hold it' }[p.kind];
   document.getElementById('gl-label').textContent = label;
   document.getElementById('gl-name').textContent = phaseTitle(p.kind === 'rest' ? after : p);
 

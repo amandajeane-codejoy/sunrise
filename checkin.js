@@ -4,7 +4,7 @@ let planTarget = 'today'; // 'today' or 'tomorrow'
 
 const MISSED_NOTES = {
   1: 'Yesterday was off. Today’s a fresh one.',
-  2: 'Two days off. Today’s a 10-minute restart. Let’s go.'
+  2: 'Two days off. Today’s a short restart workout. Let’s go.'
 };
 const REST_REASONS = ['Travel', 'Busy', 'Sore', 'Other'];
 
@@ -34,7 +34,7 @@ function renderCheckin() {
   const now = document.getElementById('workout-now');
   now.hidden = !isToday;
   now.textContent = doneToday.length ? 'Do another workout →'
-    : todayLength() === 'restart' ? 'Start the 10-minute restart →'
+    : todayLength() === 'restart' ? `Start the ${planWorkout('restart').minutes}-minute restart →`
     : todayLength() === 'short' ? 'Start 5-minute workout →' : 'Workout now →';
 
   document.querySelectorAll('[data-choice]').forEach(b => b.classList.toggle('selected', !!plan && plan.choice === b.dataset.choice));

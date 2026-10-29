@@ -235,3 +235,7 @@ select.full{width:100%;margin-top:8px;min-height:44px;background:#1f1634;border:
 .rest-tools{display:flex;align-items:center;gap:8px}
 .more-rest{border:1px solid #3b6b6b;background:#1f1634;color:var(--teal);border-radius:100px;padding:6px 12px;font-size:13px;font-weight:800;min-height:34px}
 .more-rest:active,.timer-buttons .secondary:active{transform:scale(.97)}
+
+/* Stretches on the Today screen */
+.stretch-line{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.4}
+.stretch-line b{color:var(--cream);font-weight:800}

@@ -154,12 +154,68 @@ const WARMUPS = [
   { name: 'Torso twists', cue: 'Gentle turns side to side.' }
 ];
 
-const COOLDOWN_BY_TYPE = {
-  'Shoulders & Posture': 'neck-stretch',
-  'Lower Body': 'hip-flexor',
-  'Upper Body': 'childs-pose',
-  'Core': 'childs-pose',
-  'Mobility & Stretch': 'childs-pose'
+// Stretches, 30 seconds each. Moving stretches go before the workout, held
+// stretches after. One cue each, short enough to read at a glance.
+// needs: household props for the "What you'll need" list. No overhead stretches.
+const STRETCHES = [
+  // ---------- Moving (before) ----------
+  { id: 'leg-swings-front', name: 'Front-to-back leg swings', floor: false, needs: ['counter'], cue: 'Hold a counter. Swing one leg gently forward and back. Switch halfway.' },
+  { id: 'leg-swings-side', name: 'Side-to-side leg swings', floor: false, needs: ['counter'], cue: 'Hold a counter. Swing one leg across and out. Switch halfway.' },
+  { id: 'knee-hugs', name: 'Standing knee hugs', floor: false, cue: 'Hug one knee toward your chest, then switch. Stand tall.' },
+  { id: 'hip-hinges', name: 'Hip hinges', floor: false, cue: 'Hands on hips. Push your hips back with a flat back, then stand tall.' },
+  { id: 'calf-pumps', name: 'Calf pumps', floor: false, cue: 'Rise onto your toes and lower, slow and steady.' },
+  { id: 'blade-squeezes', name: 'Shoulder blade squeezes', floor: false, cue: 'Squeeze your shoulder blades back and down, then relax.' },
+  { id: 'chest-openers', name: 'Chest openers', floor: false, cue: 'Arms out at shoulder height. Open wide, then give yourself a hug.' },
+  { id: 'neck-turns', name: 'Gentle neck turns', floor: false, cue: 'Turn your head slowly side to side. Small and easy.' },
+  { id: 'arm-swings', name: 'Easy arm swings', floor: false, cue: 'Swing your arms across your chest and open, below shoulder height.' },
+  { id: 'wrist-circles', name: 'Wrist circles', floor: false, cue: 'Circle your wrists both ways, then open and close your hands.' },
+  { id: 'standing-cat-cow', name: 'Standing cat-cow', floor: false, cue: 'Hands on your thighs. Round your back, then gently arch.' },
+  { id: 'side-leans', name: 'Side leans', floor: false, cue: 'Slide one hand down the side of your leg, then switch.' },
+  { id: 'torso-rotations', name: 'Slow torso rotations', floor: false, cue: 'Arms crossed on your chest. Turn side to side slowly.' },
+  { id: 'pelvic-tilts', name: 'Standing pelvic tilts', floor: false, cue: 'Soft knees. Tuck your tailbone under, then tip it back.' },
+
+  // ---------- Held (after) ----------
+  { id: 'doorway', name: 'Doorway chest stretch', floor: false, cue: 'Forearms on a door frame at shoulder height. Lean through gently. No tingling.' },
+  { id: 'neck', name: 'Upper trap and neck stretch', floor: false, cue: 'Tilt one ear toward your shoulder. Keep the other shoulder low. Switch halfway.' },
+  { id: 'levator', name: 'Neck and shoulder blade stretch', floor: false, cue: 'Turn your nose toward one armpit and look down gently. Switch halfway.' },
+  { id: 'cross-body', name: 'Gentle cross-body stretch', floor: false, cue: 'Bring one arm across your chest, hold above the elbow. Stop if it pinches. Switch halfway.' },
+  { id: 'wrist-stretch', name: 'Wrist and forearm stretch', floor: false, cue: 'Arm out, palm up, ease your fingers back. Then palm down. Switch halfway.' },
+  { id: 'quad', name: 'Standing quad stretch', floor: false, needs: ['counter'], cue: 'Hold a counter. Pull one heel toward your seat. Switch halfway.' },
+  { id: 'calf', name: 'Calf stretch at the wall', floor: false, cue: 'Hands on the wall, one leg back, heel down. Switch halfway.' },
+  { id: 'hip-flexor', name: 'Hip flexor stretch', floor: true, needs: ['towel'], cue: 'Half-kneel on a towel. Tuck your tailbone and shift forward. Switch halfway.' },
+  { id: 'hamstring', name: 'Seated hamstring stretch', floor: true, cue: 'Sit with one leg straight. Reach toward your toes. Switch halfway.' },
+  { id: 'figure-4', name: 'Figure-4 glute stretch', floor: true, cue: 'On your back, cross one ankle over the other knee and pull gently. Switch halfway.' },
+  { id: 'butterfly', name: 'Butterfly stretch', floor: true, cue: 'Sit with the soles of your feet together, knees open. Sit tall and breathe.' },
+  { id: 'hips-9090', name: '90/90 hips', floor: true, cue: 'Sit with both knees bent at 90 degrees. Lean over the front hip. Switch halfway.' },
+  { id: 'thread-needle', name: 'Thread the needle', floor: true, cue: 'On hands and knees, slide one arm under your body and rest. Switch halfway.' },
+  { id: 'open-books', name: 'Thoracic open books', floor: true, cue: 'Lie on your side, knees bent. Open your top arm across like a book. Switch halfway.' },
+  { id: 'sphinx', name: 'Sphinx stretch', floor: true, cue: 'Lie on your stomach, prop up on your forearms, and relax your belly.' },
+  { id: 'knees-to-chest', name: 'Knees to chest', floor: true, cue: 'On your back, hug both knees in and rock gently.' },
+  { id: 'supine-twist', name: 'Lying twist', floor: true, cue: 'On your back, let both knees fall to one side. Switch halfway.' },
+  { id: 'cat-cow', name: 'Cat-cow', floor: true, cue: 'Hands and knees. Round your back up, then let it sag gently. Move with your breath.' },
+  { id: 'childs-pose', name: 'Child’s pose', floor: true, cue: 'Knees wide, sit back toward your heels, and walk your hands forward.' }
+].map(s => ({ ...s, cues: [s.cue] }));
+
+const STRETCH_BY_ID = Object.fromEntries(STRETCHES.map(s => [s.id, s]));
+
+// Matched to each day type. Before: moving stretches. After: held stretches,
+// standing first and floor last. Shorter workouts use the first few of each.
+const STRETCH_PLAN = {
+  'Shoulders & Posture': {
+    before: ['blade-squeezes', 'chest-openers', 'neck-turns', 'arm-swings'],
+    after: ['doorway', 'neck', 'levator', 'cross-body', 'thread-needle', 'open-books', 'sphinx', 'childs-pose'] },
+  'Lower Body': {
+    before: ['leg-swings-front', 'leg-swings-side', 'knee-hugs', 'hip-hinges'],
+    after: ['quad', 'calf', 'hip-flexor', 'hamstring', 'figure-4', 'butterfly', 'hips-9090', 'childs-pose'] },
+  'Upper Body': {
+    before: ['arm-swings', 'chest-openers', 'wrist-circles', 'blade-squeezes'],
+    after: ['doorway', 'cross-body', 'wrist-stretch', 'neck', 'thread-needle', 'open-books', 'sphinx', 'childs-pose'] },
+  'Core': {
+    before: ['standing-cat-cow', 'side-leans', 'torso-rotations', 'pelvic-tilts'],
+    after: ['doorway', 'sphinx', 'cat-cow', 'knees-to-chest', 'supine-twist', 'figure-4', 'hip-flexor', 'childs-pose'] },
+  'Mobility & Stretch': {
+    before: ['standing-cat-cow', 'torso-rotations', 'knee-hugs', 'calf-pumps'],
+    after: ['doorway', 'calf', 'hamstring', 'figure-4', 'supine-twist', 'knees-to-chest', 'butterfly', 'childs-pose'] }
 };
 
 const MOVE_BY_ID = Object.fromEntries(MOVES.map(m => [m.id, m]));
@@ -240,14 +296,16 @@ function gatherList(plan) {
   [...weights.entries()].sort((a, b) => a[1].lb - b[1].lb)
     .forEach(([key, w]) => items.push({ key: `weight-${key}`, label: w.label }));
 
-  const allMoves = [...plan.moves.map(m => m.move), ...plan.cooldown];
+  const stretches = [...plan.stretchesBefore, ...plan.cooldown];
+  const allMoves = [...plan.moves.map(m => m.move), ...stretches];
   if (state.equipment.mat && allMoves.some(m => m.floor)) items.push({ key: 'mat', label: 'Yoga mat' });
 
   const versionText = plan.moves.map(({ move, version }) => versionsOf(move)[version]).join(' ').toLowerCase();
-  const cueText = [...plan.moves.map(m => m.move), ...plan.cooldown].map(m => m.cues.join(' ')).join(' ').toLowerCase();
+  const cueText = allMoves.map(m => m.cues.join(' ')).join(' ').toLowerCase();
+  const stretchNeeds = new Set(stretches.flatMap(s => s.needs || []));
   for (const prop of PROPS) {
     const text = prop.fromCues ? versionText + ' ' + cueText : versionText;
-    if (prop.words.some(w => text.includes(w))) items.push({ key: prop.key, label: prop.label });
+    if (stretchNeeds.has(prop.key) || prop.words.some(w => text.includes(w))) items.push({ key: prop.key, label: prop.label });
   }
 
   items.push({ key: 'water', label: 'A glass of water' });
@@ -258,10 +316,11 @@ function gatherList(plan) {
 
 const LENGTHS = {
   // restSecs: null means use the Rest between moves setting.
-  full:    { label: '15 min', name: 'Full workout', warmups: 4, rounds: 3, restSecs: null, cooldown: 2, rate: true },
-  restart: { label: '10 min', name: '10-minute restart', warmups: 2, rounds: 2, restSecs: null, cooldown: 1, rate: true },
+  // warmups: 30-second warm-up moves. before/after: 30-second stretches.
+  full:    { name: 'Full workout', warmups: 4, before: 4, after: 8, rounds: 3, restSecs: null, rate: true },
+  restart: { name: 'Restart workout', warmups: 1, before: 2, after: 2, rounds: 2, restSecs: null, rate: true },
   // Short day: quick 5-second switches, so no ratings.
-  short:   { label: '5 min', name: '5-minute workout', warmups: 1, rounds: 2, restSecs: 5, cooldown: 1, rate: false, workSecs: 25 }
+  short:   { name: '5-minute workout', warmups: 1, before: 0, after: 2, rounds: 2, restSecs: 5, rate: false, workSecs: 25 }
 };
 
 // Today's length: picked on the Today screen, else from the check-in, else full.
@@ -315,10 +374,20 @@ function planWorkout(length = todayLength()) {
     return { move, version: set.version, weight: set.weight, secs: shape.workSecs || phase.workSecs + set.extraSecs };
   });
 
-  const cooldown = [MOVE_BY_ID['doorway-stretch'], MOVE_BY_ID[COOLDOWN_BY_TYPE[type]]].slice(0, shape.cooldown);
-  const warmups = Array.from({ length: shape.warmups }, (_, i) => WARMUPS[(number + i) % WARMUPS.length]);
+  const stretchPlan = STRETCH_PLAN[type];
+  const stretchesBefore = stretchPlan.before.slice(0, shape.before).map(id => STRETCH_BY_ID[id]);
+  const cooldown = stretchPlan.after.slice(0, shape.after).map(id => STRETCH_BY_ID[id]);
+  // Warm-up moves first, then moving stretches for today's muscles.
+  const warmups = [
+    ...Array.from({ length: shape.warmups }, (_, i) => ({ ...WARMUPS[(number + i) % WARMUPS.length], part: 'warmup' })),
+    ...stretchesBefore.map(s => ({ name: s.name, cue: s.cue, part: 'stretch' }))
+  ];
 
-  return { type, number, length, lengthLabel: shape.label, rounds: shape.rounds, rate: shape.rate,
-           workSecs: shape.workSecs || phase.workSecs, restSecs: shape.restSecs || Number(state.prefs.restSecs) || 30, moves, warmups, cooldown,
+  const restSecs = shape.restSecs || Number(state.prefs.restSecs) || 30;
+  const workTotal = shape.rounds * moves.reduce((a, m) => a + m.secs, 0) + restSecs * (shape.rounds * moves.length - 1);
+  const minutes = Math.max(1, Math.round((workTotal + 30 * (warmups.length + cooldown.length)) / 60));
+
+  return { type, number, length, lengthLabel: `${minutes} min`, minutes, rounds: shape.rounds, rate: shape.rate,
+           workSecs: shape.workSecs || phase.workSecs, restSecs, moves, warmups, stretchesBefore, cooldown,
            shoulderDay: moves.some(m => m.move.shoulder) || type === 'Shoulders & Posture' };
 }

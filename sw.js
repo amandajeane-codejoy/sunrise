@@ -1,5 +1,5 @@
 // Change VERSION whenever any app file changes, so phones pick up the update.
-const VERSION = 'sunrise-0.11';
+const VERSION = 'sunrise-0.12';
 const FILES = [
   './',
   'index.html',
